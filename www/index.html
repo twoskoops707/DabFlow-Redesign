@@ -29,8 +29,21 @@
 
   <!-- App root -->
   <div id="app">
-    <!-- Screens injected here in subsequent tasks -->
+    <div id="screen-home"     class="screen active" role="main"></div>
+    <div id="screen-timer"    class="screen"        role="main"></div>
+    <div id="screen-stats"    class="screen"        role="main"></div>
+    <div id="screen-glass"    class="screen"        role="main"></div>
+    <div id="screen-settings" class="screen"        role="main"></div>
   </div>
+
+  <!-- Pill nav -->
+  <nav class="pill-nav" id="pill-nav">
+    <button class="nav-btn active" data-screen="home"     onclick="switchScreen('home')"     aria-label="Home"></button>
+    <button class="nav-btn"        data-screen="timer"    onclick="switchScreen('timer')"    aria-label="Timer"></button>
+    <button class="nav-btn"        data-screen="stats"    onclick="switchScreen('stats')"    aria-label="Stats"></button>
+    <button class="nav-btn"        data-screen="glass"    onclick="switchScreen('glass')"    aria-label="Glass"></button>
+    <button class="nav-btn"        data-screen="settings" onclick="switchScreen('settings')" aria-label="Settings"></button>
+  </nav>
 
   <!-- Scripts -->
   <script src="js/icons.js"></script>
