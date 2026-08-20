@@ -1,0 +1,12 @@
+{
+  "appId": "com.dabflow.ember",
+  "appName": "DabFlow",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#07090F",
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

@@ -2,9 +2,18 @@
   "name": "dabflow-redesign",
   "version": "2.0.0",
   "description": "DabFlow — Ember UI redesign",
+  "main": "www/index.html",
   "scripts": {
     "build": "mkdir -p docs && cp -r www/* docs/ && echo 'Build complete'",
-    "dev": "npx live-server www --port=3000"
+    "dev": "npx live-server www --port=3000",
+    "cap:sync": "npx cap sync android"
   },
-  "keywords": ["dab", "timer", "cannabis", "PWA"]
+  "keywords": ["dab", "timer", "cannabis", "PWA"],
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
 }
