@@ -209,8 +209,102 @@ function renderGlass() {
     </div>`;
 }
 
-// Stubs — filled in later tasks
-function renderSettings() {}
+function getSettings() {
+  return JSON.parse(localStorage.getItem('dabflow2_settings') || '{}');
+}
+
+function saveSetting(key, value) {
+  const s = getSettings();
+  s[key] = value;
+  localStorage.setItem('dabflow2_settings', JSON.stringify(s));
+}
+
+function adjustSetting(key, delta) {
+  const s = getSettings();
+  const defaults = { heat: 45, hold: 8, cool: 30 };
+  const val = Math.max(5, (s[key] !== undefined ? s[key] : defaults[key]) + delta);
+  saveSetting(key, val);
+  const el = document.getElementById('setting-' + key);
+  if (el) el.textContent = val;
+}
+
+function toggleSetting(key, btn) {
+  const isOn = btn.dataset.on === 'true';
+  const newVal = !isOn;
+  saveSetting(key, newVal);
+  btn.dataset.on = newVal;
+  btn.style.background = newVal ? 'var(--accent)' : 'var(--bg-elevated)';
+  btn.querySelector('span').style.left = newVal ? '24px' : '3px';
+}
+
+function timerSettingRow(key, label, value) {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${label}</div>
+      <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);">seconds</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:var(--sp-3);">
+      <button onclick="adjustSetting('${key}',-5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">−</button>
+      <span class="font-mono" id="setting-${key}" style="min-width:36px;text-align:center;color:var(--text-primary);">${value}</span>
+      <button onclick="adjustSetting('${key}',5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">+</button>
+    </div>
+  </div>`;
+}
+
+function toggleRow(key, label, value) {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;">
+    <span class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${label}</span>
+    <button onclick="toggleSetting('${key}',this)"
+      style="width:48px;height:26px;border-radius:var(--r-full);border:none;cursor:pointer;position:relative;transition:background 200ms;background:${value ? 'var(--accent)' : 'var(--bg-elevated)'};"
+      data-on="${value}">
+      <span style="position:absolute;top:3px;left:${value ? '24px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 200ms;"></span>
+    </button>
+  </div>`;
+}
+
+function renderSettings() {
+  const s = getSettings();
+  const el = document.getElementById('screen-settings');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="screen-inner">
+      <div style="padding-top:var(--sp-6);">
+        <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-6);">Settings</h1>
+
+        <p class="section-title">Timer</p>
+        <div class="card" style="margin-bottom:var(--sp-4);">
+          <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
+            ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 45)}
+            ${timerSettingRow('hold', 'Hold Time', s.hold !== undefined ? s.hold : 8)}
+            ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 30)}
+          </div>
+        </div>
+
+        <p class="section-title">Preferences</p>
+        <div class="card" style="margin-bottom:var(--sp-4);">
+          <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-4);">
+            ${toggleRow('haptics', 'Haptic Feedback', s.haptics !== false)}
+          </div>
+        </div>
+
+        ${window.BUILD_VARIANT !== 'premium' ? `
+          <div class="card" style="margin-bottom:var(--sp-4);border-color:rgba(46,204,138,0.3);">
+            <div class="card-body" style="text-align:center;">
+              <div style="margin-bottom:var(--sp-3);color:var(--accent);">${getIcon('crown', 28)}</div>
+              <div class="font-display" style="font-size:var(--font-lg);font-weight:600;margin-bottom:var(--sp-2);">Go Premium</div>
+              <div class="font-body" style="font-size:var(--font-sm);color:var(--text-muted);margin-bottom:var(--sp-4);">Remove ads. Unlock achievements.</div>
+              <button class="btn-primary">Upgrade</button>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="text-align:center;padding:var(--sp-6);color:var(--text-muted);">
+          <p class="font-mono" style="font-size:var(--font-xs);">DabFlow v2.0.0</p>
+          <p class="font-mono" style="font-size:var(--font-xs);margin-top:var(--sp-1);">${window.BUILD_VARIANT || 'free'}</p>
+        </div>
+      </div>
+    </div>`;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   // Seed data for demo/premium builds
