@@ -129,8 +129,87 @@ function renderHome() {
     </div>`;
 }
 
+const TOP_ARTISTS = [
+  { name: 'Mr Gray Glass',    sub: 'Master Glass Artist',    url: 'https://www.instagram.com/mrgrayglass/' },
+  { name: 'Tristan Hodges',   sub: 'Elite Functional Art',   url: 'https://www.instagram.com/tristanhodgesglass/' },
+  { name: 'Chachi Rodriguez', sub: 'Innovative Heady Glass', url: 'https://www.instagram.com/chachierodriguez/' },
+  { name: 'Jesse ESP',        sub: 'Premium Glass Art',      url: 'https://www.instagram.com/espglass/' },
+  { name: 'Mobius Glass',     sub: 'San Luis Obispo, CA',    url: 'https://www.mobiusglass.com/' },
+];
+
+const ROTATING_ARTISTS = [
+  { name: 'Banjo',               sub: 'Oregon',           url: 'https://www.instagram.com/banjoglass/' },
+  { name: 'Mothership Glass',    sub: 'Washington',       url: 'https://mothershipglass.com/' },
+  { name: 'Joaquim Glass',       sub: 'Berkeley, CA',     url: 'https://www.instagram.com/joaquimglass/' },
+  { name: 'BAGI',                sub: 'Bay Area',         url: 'https://www.instagram.com/bayareaglassinstitute/' },
+  { name: 'Invest In Headies',   sub: 'Bay Area Gallery', url: 'https://investinheadies.com/' },
+  { name: 'Jason Stropko',       sub: 'SF Bay Area',      url: 'https://jasonstropko.com/' },
+  { name: 'Sovereignty Glass',   sub: 'California',       url: 'https://www.instagram.com/sovereigntyglass/' },
+  { name: 'Toro Glass',          sub: 'California',       url: 'https://www.instagram.com/toaboroglass/' },
+  { name: 'Humboldt Glassblowers', sub: 'Arcata, CA',    url: 'https://www.instagram.com/humboldtglassblowers/' },
+  { name: 'Glass Garage',        sub: 'Eureka, CA',       url: 'https://www.instagram.com/glassgarageeureka/' },
+];
+
+function getWeeklyFeatured() {
+  const week = Math.floor(Date.now() / (7 * 86400000));
+  let s = week;
+  const arr = [...ROTATING_ARTISTS];
+  for (let i = arr.length - 1; i > 0; i--) {
+    s = (s * 9301 + 49297) % 233280;
+    const j = Math.floor((s / 233280) * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, 4);
+}
+
+function artistCard(artist) {
+  return `<a href="${artist.url}" target="_blank" rel="noopener noreferrer" class="artist-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div class="artist-name">${artist.name}</div>
+        <div class="artist-sub">${artist.sub}</div>
+      </div>
+      <span class="link-icon">${getIcon('link-out', 14)}</span>
+    </div>
+  </a>`;
+}
+
+function equipmentCard() {
+  return `<div class="card" style="padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-2);min-height:80px;justify-content:center;">
+    <div class="font-display" style="font-size:var(--font-sm);color:var(--text-muted);">Equipment</div>
+    <div class="font-mono" style="font-size:var(--font-xs);color:var(--accent);">Coming Soon</div>
+  </div>`;
+}
+
+function renderGlass() {
+  const featured = getWeeklyFeatured();
+  const el = document.getElementById('screen-glass');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="screen-inner">
+      <div style="padding-top:var(--sp-6);">
+        <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-6);">Glass</h1>
+
+        <p class="section-title">Top Artists</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-6);">
+          ${TOP_ARTISTS.map(artistCard).join('')}
+        </div>
+
+        <p class="section-title">Featured This Week</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-6);">
+          ${featured.map(artistCard).join('')}
+        </div>
+
+        <p class="section-title">Equipment</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-8);">
+          ${equipmentCard()}
+          ${equipmentCard()}
+        </div>
+      </div>
+    </div>`;
+}
+
 // Stubs — filled in later tasks
-function renderGlass() {}
 function renderSettings() {}
 
 document.addEventListener('DOMContentLoaded', () => {
