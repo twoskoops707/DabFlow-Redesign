@@ -151,12 +151,28 @@ Sections:
 
 ### 4. Glass / Equipment
 
-**Placeholder for now.** Affiliate monetization to be designed in a future sprint.
+Two sections: **Glass Artists** (populated) + **Equipment** (2 blank cards, affiliate-ready).
 
-Current implementation:
-- Clean grid of equipment cards (image placeholder, name, category tag)
-- "Coming soon" tasteful state — not a dead end, looks intentional
-- Layout ready to receive real products + affiliate links
+**Top Artists** (permanent, 5 cards in a 2-col grid):
+- Mr Gray Glass — instagram.com/mrgrayglass — Master Glass Artist
+- Tristan Hodges — instagram.com/tristanhodgesglass — Elite Functional Art
+- Chachi Rodriguez — instagram.com/chachierodriguez — Innovative Heady Glass
+- Jesse ESP — instagram.com/espglass — Premium Glass Art
+- Mobius Glass — mobiusglass.com — San Luis Obispo, CA
+
+**Featured This Week** (weekly rotation, seeded by week number, shows 4 of 10):
+Banjo (OR), Mothership Glass (WA), Joaquim Glass (Berkeley CA), BAGI (Bay Area),
+Invest In Headies (Bay Area Gallery), Jason Stropko (SF Bay Area),
+Sovereignty Glass (CA), Toro Glass (CA), Humboldt Glassblowers (Arcata CA), Glass Garage (Eureka CA)
+
+Card design: artist name + location + Instagram/site link. No emoji. Custom "link-out" SVG icon.
+Tap opens external link. Cards have subtle accent border on hover/press.
+
+**Equipment** (2 blank product cards at bottom of screen):
+- Styled identically to artist cards
+- Show "Coming Soon" label in accent color
+- Affiliate link slot already in data structure, empty for now
+- Layout: 2-col grid matching artist card grid
 
 ### 5. Settings
 
