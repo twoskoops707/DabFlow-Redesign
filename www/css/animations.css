@@ -1,7 +1,8 @@
-/* ── Screen transitions ── */
+/* ── App layout + screen transitions ── */
 #app {
-  position: relative;
-  height: 100%;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
   overflow: hidden;
 }
 

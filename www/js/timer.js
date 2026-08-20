@@ -252,6 +252,9 @@ function pauseTimer() {
 function resumeTimer() {
   _timerState    = 'running';
   _timerInterval = setInterval(timerTick, 100);
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').then(s => { _wakeLock = s; }).catch(() => {});
+  }
   const btn = document.getElementById('timer-start-btn');
   if (btn) btn.textContent = 'Pause';
 }
@@ -324,16 +327,20 @@ function rateSession(rating) {
 function triggerBloomEasterEgg() {
   const container = document.getElementById('timer-bloom');
   if (!container) return;
+  const cs   = getComputedStyle(document.documentElement);
+  const cool = cs.getPropertyValue('--phase-cool').trim() || '#2ECC8A';
+  const heat = cs.getPropertyValue('--phase-heat').trim() || '#5B9CF6';
+  const hold = cs.getPropertyValue('--phase-hold').trim() || '#F5A623';
   container.innerHTML = `
     <div class="bloom-ring">
       <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
         <polygon
           points="60,10 75,35 103,35 82,52 90,78 60,62 30,78 38,52 17,35 45,35"
-          stroke="#2ECC8A" stroke-width="1.5" fill="none" opacity="0.8"/>
+          stroke="${cool}" stroke-width="1.5" fill="none" opacity="0.8"/>
         <circle cx="60" cy="60" r="25"
-          stroke="#5B9CF6" stroke-width="1" fill="none"/>
+          stroke="${heat}" stroke-width="1" fill="none"/>
         <circle cx="60" cy="60" r="45"
-          stroke="#F5A623" stroke-width="0.5" fill="none" opacity="0.4"/>
+          stroke="${hold}" stroke-width="0.5" fill="none" opacity="0.4"/>
       </svg>
     </div>`;
   setTimeout(() => { container.innerHTML = ''; }, 1300);

@@ -55,6 +55,9 @@ function getStreak() {
   const days = new Set(sessions.map(s => new Date(s.ts).toDateString()));
   let streak = 0;
   const d = new Date();
+  // Count streak starting from today; fall back to yesterday so the streak
+  // stays alive if the user hasn't sessioned yet today.
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);
   while (days.has(d.toDateString())) {
     streak++;
     d.setDate(d.getDate() - 1);
@@ -80,6 +83,8 @@ function formatRelTime(ts) {
 
 function startPreset(id) {
   const preset = PRESETS.find(p => p.id === id);
+  if (!preset) return;
+  window._selectedMaterial = preset.label;
   if (preset.id === 'custom') {
     const saved = JSON.parse(localStorage.getItem('dabflow2_settings') || '{}');
     window._timerConfig = { heat: saved.heat || 45, hold: saved.hold || 8, cool: saved.cool || 30 };

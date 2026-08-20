@@ -92,10 +92,15 @@ function formatTotalTime(seconds) {
 
 function calcBestStreak(sessions) {
   if (!sessions.length) return 0;
-  const days = [...new Set(sessions.map(s => new Date(s.ts).toDateString()))].sort();
+  // Use numeric local-midnight timestamps so numeric sort is correct
+  const daySet = new Set(sessions.map(s => {
+    const d = new Date(s.ts);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  }));
+  const days = [...daySet].sort((a, b) => a - b);
   let best = 1, cur = 1;
   for (let i = 1; i < days.length; i++) {
-    const diff = (new Date(days[i]) - new Date(days[i-1])) / 86400000;
+    const diff = (days[i] - days[i - 1]) / 86400000;
     if (diff === 1) { cur++; best = Math.max(best, cur); }
     else cur = 1;
   }
@@ -163,7 +168,8 @@ function renderMaterialChart(sessions) {
   sessions.forEach(s => { counts[s.material] = (counts[s.material] || 0) + 1; });
   const labels = Object.keys(counts);
   const data = Object.values(counts);
-  const colors = ['#2ECC8A','#5B9CF6','#F5A623','#8A9BAE'];
+  const PALETTE = ['#2ECC8A', '#5B9CF6', '#F5A623', '#8A9BAE', '#E879F9', '#FB923C'];
+  const colors = labels.map((_, i) => PALETTE[i % PALETTE.length]);
   _chartInstances['material'] = new Chart(canvas, {
     type: 'doughnut',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
