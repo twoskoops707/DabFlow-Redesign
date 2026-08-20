@@ -28,8 +28,16 @@ let _countdownInterval = null;
 function initTimer() {
   const canvas = document.getElementById('timer-ring');
   if (!canvas) return;
-  canvas.width  = (canvas.offsetWidth  * window.devicePixelRatio) || 600;
-  canvas.height = (canvas.offsetHeight * window.devicePixelRatio) || 600;
+
+  // Only resize when dimensions actually changed — assigning canvas.width always
+  // clears the canvas even when the value is identical, which would erase a
+  // running timer's ring for up to 100ms.
+  const newW = (canvas.offsetWidth  * window.devicePixelRatio) || 600;
+  const newH = (canvas.offsetHeight * window.devicePixelRatio) || 600;
+  if (canvas.width !== newW || canvas.height !== newH) {
+    canvas.width  = newW;
+    canvas.height = newH;
+  }
 
   const rb = document.getElementById('timer-reset-btn');
   if (rb && !rb.dataset.iconSet && typeof getIcon === 'function') {
@@ -37,8 +45,11 @@ function initTimer() {
     rb.dataset.iconSet = '1';
   }
 
-  drawRingIdle();
-  updateTimerDisplay('--:--');
+  // Only reset display and ring when idle — don't overwrite a live timer.
+  if (_timerState === 'idle') {
+    drawRingIdle();
+    updateTimerDisplay('--:--');
+  }
 }
 
 function buildPhases(config) {
@@ -306,7 +317,9 @@ function showDabCompleteAnimation() {
 
 function showSessionNotesPanel(existing) {
   _selectedRating = 0;
-  _editMode  = !!existing && !!existing.ts && existing.ts !== (_sessionStart || Date.now());
+  // Edit mode when a saved session is explicitly passed in (from stats/home edit
+  // button). New sessions call this function with no argument.
+  _editMode  = !!existing;
   _editTs    = _editMode ? existing.ts : null;
 
   // Reset form
@@ -341,20 +354,20 @@ function showSessionNotesPanel(existing) {
 
   _countdownInterval = setInterval(() => {
     remaining--;
-    if (countdownEl && remaining <= 10) {
-      countdownEl.textContent = `Auto-closing in ${remaining}s`;
+    // Show countdown for last 10 seconds (skip 0 — save fires immediately)
+    if (countdownEl && remaining > 0 && remaining <= 10) {
+      countdownEl.textContent = `Auto-saving in ${remaining}s`;
     }
     if (remaining <= 0) {
       clearInterval(_countdownInterval);
-      hideSessionNotesPanel();
-      if (typeof showToast === 'function') showToast('Tap Edit on Last Session to add notes');
+      saveSessionNotes();
     }
   }, 1000);
 
+  // Belt-and-suspenders: setTimeout as fallback if interval drifts
   _notesAutoClose = setTimeout(() => {
     clearInterval(_countdownInterval);
-    hideSessionNotesPanel();
-    if (typeof showToast === 'function') showToast('Tap Edit on Last Session to add notes');
+    saveSessionNotes();
   }, 30000);
 }
 
