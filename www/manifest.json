@@ -1,0 +1,48 @@
+{
+  "name": "DabFlow — Perfect Dabs Every Time",
+  "short_name": "DabFlow",
+  "description": "Precision dab timer for concentrate enthusiasts. Heat ring UI, gamification, and premium stats.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07090F",
+  "theme_color": "#E24D20",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "health", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Quick Start Timer",
+      "short_name": "Start",
+      "description": "Start timer with your saved settings",
+      "url": "./index.html?action=quick-start",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Stats",
+      "short_name": "Stats",
+      "description": "View your session statistics",
+      "url": "./index.html?action=stats",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

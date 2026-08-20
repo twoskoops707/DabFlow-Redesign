@@ -1,0 +1,10 @@
+{
+  "name": "dabflow-redesign",
+  "version": "2.0.0",
+  "description": "DabFlow — Ember UI redesign",
+  "scripts": {
+    "build": "mkdir -p docs && cp -r www/* docs/ && echo 'Build complete'",
+    "dev": "npx live-server www --port=3000"
+  },
+  "keywords": ["dab", "timer", "cannabis", "PWA"]
+}
