@@ -27,7 +27,9 @@ function switchScreen(name) {
     btn.classList.toggle('active', btn.dataset.screen === name);
   });
 
-  if (name === 'timer') setTimeout(initTimer, 50);
+  if (name === 'timer') {
+    setTimeout(initTimer, 50);
+  }
   if (name === 'stats') setTimeout(renderStats, 50);
 }
 
@@ -131,7 +133,6 @@ function renderHome() {
 function renderGlass() {}
 function renderSettings() {}
 function renderStats() {}
-function initTimer() {}
 
 document.addEventListener('DOMContentLoaded', () => {
   if (window.BUILD_VARIANT === 'demo' || window.BUILD_VARIANT === 'premium') {
