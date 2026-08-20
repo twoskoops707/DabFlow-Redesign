@@ -10,19 +10,21 @@ function renderStats() {
   Object.values(_chartInstances).forEach(c => c.destroy());
   _chartInstances = {};
 
-  const streak = getStreak();
-  const totalTime = sessions.reduce((t, s) => t + (s.heat||0) + (s.hold||0) + (s.cool||0), 0);
+  const streak     = getStreak();
+  const totalTime  = sessions.reduce((t, s) => t + (s.heat||0) + (s.hold||0) + (s.cool||0), 0);
   const bestStreak = calcBestStreak(sessions);
+  const hasBrand   = sessions.some(s => s.brand);
+  const hasStrain  = sessions.some(s => s.strain);
 
   el.innerHTML = `
     <div style="padding-top:var(--sp-6);">
       <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-6);">Stats</h1>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-6);">
-        ${statChip(sessions.length, 'Sessions')}
+      <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-6);">
+        ${statChip(sessions.length,            'Sessions',    'chip-sessions')}
         ${statChip(formatTotalTime(totalTime), 'Total Time')}
-        ${statChip(streak, 'Streak')}
-        ${statChip(bestStreak, 'Best Streak')}
+        ${statChip(streak,                     'Streak',      'chip-streak')}
+        ${statChip(bestStreak,                 'Best Streak', 'chip-best')}
       </div>
 
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
@@ -49,37 +51,79 @@ function renderStats() {
         </div>
       </div>
 
-      <div class="card fade-up" style="position:relative;margin-bottom:var(--sp-8);">
+      ${hasBrand ? `
+      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
+        <div class="card-body">
+          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Brands</p>
+          <canvas id="chart-brand" height="180"></canvas>
+        </div>
+      </div>` : ''}
+
+      ${hasStrain ? `
+      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
+        <div class="card-body">
+          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Strains</p>
+          <canvas id="chart-strain" height="200"></canvas>
+        </div>
+      </div>` : ''}
+
+      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
           <p class="section-title">Achievements</p>
-          <div id="achievements-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);">
             ${renderAchievements(sessions)}
           </div>
         </div>
-        ${(window.BUILD_VARIANT === 'free' || window.BUILD_VARIANT === 'demo') ? `
-          <div class="premium-lock">
-            <span style="color:var(--accent);">${getIcon('crown', 28)}</span>
-            <p class="premium-lock-text">Unlock with Premium</p>
-            <button class="btn-ghost" onclick="switchScreen('settings')">Get Premium</button>
-          </div>
-        ` : ''}
       </div>
+
+      ${sessions.length ? `
+      <div class="fade-up" style="margin-bottom:var(--sp-8);">
+        <p class="section-title" style="margin-bottom:var(--sp-4);">Recent Sessions</p>
+        ${renderRecentSessions(sessions)}
+      </div>` : ''}
     </div>`;
 
-  if (streak >= 7) {
-    showToast("you've been consistent 👀");
-  }
+  if (typeof staggerCards === 'function') staggerCards(el);
+
+  if (streak >= 7) showToast("you've been consistent");
 
   requestAnimationFrame(() => {
     renderSessionsChart(sessions);
     renderHourChart(sessions);
     renderMaterialChart(sessions);
+    if (hasBrand)  renderBrandChart(sessions);
+    if (hasStrain) renderStrainChart(sessions);
+    animateStatChips(sessions.length, streak, bestStreak);
   });
 }
 
-function statChip(value, label) {
+function animateStatChips(sessCount, streak, best) {
+  const els = {
+    'chip-sessions': sessCount,
+    'chip-streak':   streak,
+    'chip-best':     best,
+  };
+  Object.entries(els).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) animateCounter(el, val);
+  });
+}
+
+function animateCounter(el, target, duration = 800) {
+  if (!target || target === 0) { el.textContent = '0'; return; }
+  const start = performance.now();
+  function step(now) {
+    const t    = Math.min(1, (now - start) / duration);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * ease);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function statChip(value, label, id) {
   return `<div class="chip">
-    <span class="chip-value">${value}</span>
+    <span class="chip-value"${id ? ` id="${id}"` : ''}>${value}</span>
     <span class="chip-label">${label}</span>
   </div>`;
 }
@@ -92,7 +136,6 @@ function formatTotalTime(seconds) {
 
 function calcBestStreak(sessions) {
   if (!sessions.length) return 0;
-  // Use numeric local-midnight timestamps so numeric sort is correct
   const daySet = new Set(sessions.map(s => {
     const d = new Date(s.ts);
     return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -113,13 +156,14 @@ const CHART_DEFAULTS = {
   font: { family: "'Space Mono', monospace", size: 10 },
 };
 
+const CHART_ANIMATION = { duration: 900, easing: 'easeOutQuart' };
+
 function renderSessionsChart(sessions) {
   const canvas = document.getElementById('chart-sessions');
   if (!canvas) return;
   const now = Date.now();
   const dayMs = 86400000;
-  const labels = [];
-  const data = [];
+  const labels = [], data = [];
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now - i * dayMs);
     labels.push(i % 5 === 0 ? `${d.getMonth()+1}/${d.getDate()}` : '');
@@ -128,9 +172,10 @@ function renderSessionsChart(sessions) {
   }
   _chartInstances['sessions'] = new Chart(canvas, {
     type: 'line',
-    data: { labels, datasets: [{ data, borderColor: '#2ECC8A', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 }] },
+    data: { labels, datasets: [{ data, borderColor: '#2ECC8A', backgroundColor: 'rgba(46,204,138,0.08)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: CHART_ANIMATION,
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: CHART_DEFAULTS.color, font: CHART_DEFAULTS.font }, grid: { color: CHART_DEFAULTS.borderColor } },
@@ -151,6 +196,7 @@ function renderHourChart(sessions) {
     data: { labels, datasets: [{ data: hourCounts, backgroundColor: 'rgba(46,204,138,0.5)', borderColor: '#2ECC8A', borderWidth: 1, borderRadius: 3 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: CHART_ANIMATION,
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: CHART_DEFAULTS.color, font: CHART_DEFAULTS.font }, grid: { display: false } },
@@ -167,13 +213,17 @@ function renderMaterialChart(sessions) {
   const counts = {};
   sessions.forEach(s => { counts[s.material] = (counts[s.material] || 0) + 1; });
   const labels = Object.keys(counts);
-  const data = Object.values(counts);
-  const PALETTE = ['#2ECC8A', '#5B9CF6', '#F5A623', '#8A9BAE', '#E879F9', '#FB923C'];
-  const colors = labels.map((_, i) => PALETTE[i % PALETTE.length]);
+  const data   = Object.values(counts);
+  const PALETTE = ['#2ECC8A', '#5B9CF6', '#F5A623', '#E879F9', '#FB923C', '#8A9BAE'];
+  const colors  = labels.map((_, i) => PALETTE[i % PALETTE.length]);
   _chartInstances['material'] = new Chart(canvas, {
     type: 'doughnut',
     data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
-    options: { responsive: false, plugins: { legend: { display: false } } },
+    options: {
+      responsive: false,
+      animation: CHART_ANIMATION,
+      plugins: { legend: { display: false } },
+    },
   });
   if (legend) {
     legend.innerHTML = labels.map((l, i) => `
@@ -183,6 +233,82 @@ function renderMaterialChart(sessions) {
         <span class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);margin-left:auto;">${data[i]}</span>
       </div>`).join('');
   }
+}
+
+function renderBrandChart(sessions) {
+  const canvas = document.getElementById('chart-brand');
+  if (!canvas) return;
+  const counts = {};
+  sessions.forEach(s => { if (s.brand) counts[s.brand] = (counts[s.brand] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+  if (!sorted.length) return;
+  _chartInstances['brand'] = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([l]) => l),
+      datasets: [{ data: sorted.map(([, v]) => v), backgroundColor: 'rgba(91,156,246,0.65)', borderColor: '#5B9CF6', borderWidth: 1, borderRadius: 4 }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      animation: CHART_ANIMATION,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: CHART_DEFAULTS.color, font: CHART_DEFAULTS.font }, grid: { color: CHART_DEFAULTS.borderColor }, beginAtZero: true },
+        y: { ticks: { color: CHART_DEFAULTS.color, font: { ...CHART_DEFAULTS.font, size: 9 }, maxRotation: 0 }, grid: { display: false } },
+      },
+    },
+  });
+}
+
+function renderStrainChart(sessions) {
+  const canvas = document.getElementById('chart-strain');
+  if (!canvas) return;
+  const counts = {};
+  sessions.forEach(s => { if (s.strain) counts[s.strain] = (counts[s.strain] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  if (!sorted.length) return;
+  _chartInstances['strain'] = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([l]) => l),
+      datasets: [{ data: sorted.map(([, v]) => v), backgroundColor: 'rgba(232,121,249,0.55)', borderColor: '#E879F9', borderWidth: 1, borderRadius: 4 }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      animation: CHART_ANIMATION,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: CHART_DEFAULTS.color, font: CHART_DEFAULTS.font }, grid: { color: CHART_DEFAULTS.borderColor }, beginAtZero: true },
+        y: { ticks: { color: CHART_DEFAULTS.color, font: { ...CHART_DEFAULTS.font, size: 9 }, maxRotation: 0 }, grid: { display: false } },
+      },
+    },
+  });
+}
+
+function renderRecentSessions(sessions) {
+  return sessions.slice(-10).reverse().map(s => {
+    const hasMeta = s.brand || s.strain;
+    const meta    = [s.brand, s.strain].filter(Boolean).join(' · ');
+    return `<div class="card" style="margin-bottom:var(--sp-3);">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);">
+        <div style="flex:1;min-width:0;">
+          <div class="font-display" style="font-size:var(--font-sm);color:var(--text-primary);">${s.material || 'Session'}</div>
+          <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            ${hasMeta ? meta : formatRelTime(s.ts)}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;">
+          ${s.rating ? `<span style="font-size:var(--font-sm);color:var(--accent);">${'★'.repeat(s.rating)}</span>` : ''}
+          ${!hasMeta
+            ? `<button class="btn-ghost" style="padding:var(--sp-2) var(--sp-3);font-size:var(--font-xs);" onpointerdown="editSessionByTs(${s.ts})">Add Notes</button>`
+            : `<button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:var(--sp-2);-webkit-tap-highlight-color:transparent;" onpointerdown="editSessionByTs(${s.ts})">${getIcon('edit', 14)}</button>`
+          }
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderAchievements(sessions) {
@@ -204,6 +330,8 @@ function renderAchievements(sessions) {
 }
 
 function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;

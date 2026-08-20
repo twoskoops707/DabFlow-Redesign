@@ -12,7 +12,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -24,7 +24,7 @@
 </head>
 <body>
 
-  <!-- Molecule background (added by app.js) -->
+  <!-- Molecule background (added by icons.js) -->
   <div id="molecule-bg" aria-hidden="true"></div>
 
   <!-- App root -->
@@ -64,7 +64,7 @@
 
         <!-- Controls -->
         <div style="margin-top:var(--sp-10);display:flex;gap:var(--sp-4);align-items:center;">
-          <button id="timer-reset-btn" onclick="resetTimer()" style="
+          <button id="timer-reset-btn" onpointerdown="resetTimer()" style="
             width:48px;height:48px;border-radius:50%;border:1px solid var(--border);
             background:var(--bg-surface);color:var(--text-muted);cursor:pointer;
             display:none;align-items:center;justify-content:center;
@@ -76,44 +76,82 @@
             Start
           </button>
         </div>
-
-        <!-- Session rating (shown after complete) -->
-        <div id="timer-rating" style="display:none;margin-top:var(--sp-8);text-align:center;">
-          <p class="font-display" style="font-size:var(--font-md);color:var(--text-secondary);margin-bottom:var(--sp-3);">Rate this session</p>
-          <div style="display:flex;gap:var(--sp-4);justify-content:center;">
-            <button onclick="rateSession(1)" style="font-size:var(--font-2xl);background:none;border:none;cursor:pointer;opacity:0.4;transition:opacity 150ms;">&#9733;</button>
-            <button onclick="rateSession(2)" style="font-size:var(--font-2xl);background:none;border:none;cursor:pointer;opacity:0.4;transition:opacity 150ms;">&#9733;</button>
-            <button onclick="rateSession(3)" style="font-size:var(--font-2xl);background:none;border:none;cursor:pointer;opacity:0.4;transition:opacity 150ms;">&#9733;</button>
-            <button onclick="rateSession(4)" style="font-size:var(--font-2xl);background:none;border:none;cursor:pointer;opacity:0.4;transition:opacity 150ms;">&#9733;</button>
-            <button onclick="rateSession(5)" style="font-size:var(--font-2xl);background:none;border:none;cursor:pointer;opacity:0.4;transition:opacity 150ms;">&#9733;</button>
-          </div>
-        </div>
       </div>
     </div>
     <div id="screen-stats" class="screen" role="main">
-      <div class="screen-inner" id="stats-content">
-        <!-- Rendered by stats.js -->
-      </div>
+      <div class="screen-inner" id="stats-content"></div>
       <!-- Mantis ad slot — shown in free/demo builds by ads.js -->
       <div class="ad-slot" style="display:none;justify-content:center;margin:var(--sp-2) 0;">
         <div class="mantis-ad" data-size="banner"></div>
       </div>
     </div>
-    <div id="screen-glass"    class="screen"        role="main"></div>
-    <div id="screen-settings" class="screen"        role="main"></div>
+    <div id="screen-glass"    class="screen" role="main"></div>
+    <div id="screen-settings" class="screen" role="main"></div>
   </div>
 
   <!-- Pill nav -->
   <nav class="pill-nav" id="pill-nav">
-    <button class="nav-btn active" data-screen="home"     onclick="switchScreen('home')"     aria-label="Home"></button>
-    <button class="nav-btn"        data-screen="timer"    onclick="switchScreen('timer')"    aria-label="Timer"></button>
-    <button class="nav-btn"        data-screen="stats"    onclick="switchScreen('stats')"    aria-label="Stats"></button>
-    <button class="nav-btn"        data-screen="glass"    onclick="switchScreen('glass')"    aria-label="Glass"></button>
-    <button class="nav-btn"        data-screen="settings" onclick="switchScreen('settings')" aria-label="Settings"></button>
+    <button class="nav-btn active" data-screen="home"     onpointerdown="switchScreen('home')"     aria-label="Home"></button>
+    <button class="nav-btn"        data-screen="timer"    onpointerdown="switchScreen('timer')"    aria-label="Timer"></button>
+    <button class="nav-btn"        data-screen="stats"    onpointerdown="switchScreen('stats')"    aria-label="Stats"></button>
+    <button class="nav-btn"        data-screen="glass"    onpointerdown="switchScreen('glass')"    aria-label="Glass"></button>
+    <button class="nav-btn"        data-screen="settings" onpointerdown="switchScreen('settings')" aria-label="Settings"></button>
   </nav>
 
-  <!-- Scripts -->
+  <!-- Dab completion animation overlay -->
+  <div id="dab-complete-overlay" class="dab-complete-overlay" aria-hidden="true">
+    <span id="dab-complete-text" class="dab-complete-text"></span>
+  </div>
+
+  <!-- Session notes overlay (dim background) -->
+  <div id="session-notes-overlay" class="session-notes-overlay" onpointerdown="skipSessionNotes()"></div>
+
+  <!-- Session notes panel -->
+  <div id="session-notes-panel" class="session-notes-panel">
+    <div class="session-notes-handle"></div>
+
+    <h2 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-1);">Session Complete</h2>
+    <p id="session-notes-subtitle" class="font-body" style="font-size:var(--font-sm);color:var(--text-muted);margin-bottom:var(--sp-6);">Log what you're smoking</p>
+
+    <div class="session-notes-field">
+      <label class="session-notes-label font-display" for="session-brand">Brand</label>
+      <input id="session-brand" class="session-notes-input" type="text" list="brand-list"
+        placeholder="e.g. Raw Garden, 710 Labs..."
+        oninput="updateStrainList(this.value.trim())">
+      <datalist id="brand-list"></datalist>
+    </div>
+
+    <div class="session-notes-field">
+      <label class="session-notes-label font-display" for="session-strain">Strain</label>
+      <input id="session-strain" class="session-notes-input" type="text" list="strain-list"
+        placeholder="e.g. Wedding Cake, MAC 1...">
+      <datalist id="strain-list"></datalist>
+    </div>
+
+    <div class="session-notes-field">
+      <label class="session-notes-label font-display">Rate this session</label>
+      <div id="session-stars" class="session-stars">
+        <button onpointerdown="selectRating(1)">&#9733;</button>
+        <button onpointerdown="selectRating(2)">&#9733;</button>
+        <button onpointerdown="selectRating(3)">&#9733;</button>
+        <button onpointerdown="selectRating(4)">&#9733;</button>
+        <button onpointerdown="selectRating(5)">&#9733;</button>
+      </div>
+    </div>
+
+    <div id="session-notes-countdown" class="session-notes-countdown"></div>
+
+    <button class="btn-primary" style="width:100%;margin-top:var(--sp-4);" onpointerdown="saveSessionNotes()">
+      Save Session
+    </button>
+    <button class="btn-ghost" style="width:100%;margin-top:var(--sp-3);" onpointerdown="skipSessionNotes()">
+      Skip
+    </button>
+  </div>
+
+  <!-- Scripts (strains before seed-data so seed can reference CONCENTRATE_BRANDS) -->
   <script src="js/icons.js"></script>
+  <script src="js/strains.js"></script>
   <script src="js/seed-data.js"></script>
   <script src="js/ads.js"></script>
   <script src="js/timer.js"></script>

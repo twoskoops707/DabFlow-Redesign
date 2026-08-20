@@ -117,28 +117,6 @@
   margin-bottom: var(--sp-4);
 }
 
-/* ── Premium lock overlay ── */
-.premium-lock {
-  position: absolute;
-  inset: 0;
-  background: rgba(8, 10, 12, 0.82);
-  backdrop-filter: blur(4px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-3);
-  border-radius: var(--r-lg);
-  z-index: 10;
-}
-
-.premium-lock-text {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: var(--font-sm);
-  color: var(--text-secondary);
-  text-align: center;
-}
-
 /* ── Buttons ── */
 .btn-primary {
   font-family: 'Space Grotesk', sans-serif;
@@ -181,4 +159,86 @@
   justify-content: center;
   padding: var(--sp-3) 0;
   min-height: 60px;
+}
+
+/* ── Session notes panel ── */
+.session-notes-panel {
+  background: var(--bg-surface);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  padding: var(--sp-4) var(--sp-5) calc(var(--sp-10) + var(--safe-bottom));
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.session-notes-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 0 auto var(--sp-5);
+}
+
+.session-notes-field {
+  margin-bottom: var(--sp-5);
+}
+
+.session-notes-label {
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--sp-2);
+}
+
+.session-notes-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-md);
+  padding: var(--sp-3) var(--sp-4);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms ease;
+  -webkit-appearance: none;
+}
+
+.session-notes-input:focus { border-color: var(--accent); }
+
+.session-stars {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.session-stars button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--border);
+  cursor: pointer;
+  padding: 0;
+  transition: color 150ms ease, transform 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.session-stars button.selected {
+  color: var(--accent);
+  transform: scale(1.15);
+}
+
+.session-notes-countdown {
+  font-family: 'Space Mono', monospace;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-align: center;
+  min-height: 20px;
+  margin-bottom: var(--sp-2);
 }

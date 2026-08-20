@@ -38,7 +38,12 @@ function generateSeedData() {
       const material = materials[Math.floor(Math.random() * materials.length)];
       const rating = Math.random() < 0.1 ? 3 : (Math.random() < 0.3 ? 4 : 5);
 
-      sessions.push({ ts, material, rating, heat: cfg.heat, hold: cfg.hold, cool: cfg.cool });
+      // Pick a random brand + one of its strains for realistic demo data
+      const brandEntry = CONCENTRATE_BRANDS[Math.floor(Math.random() * CONCENTRATE_BRANDS.length)];
+      const brand = brandEntry.name;
+      const strain = brandEntry.strains[Math.floor(Math.random() * brandEntry.strains.length)];
+
+      sessions.push({ ts, material, rating, heat: cfg.heat, hold: cfg.hold, cool: cfg.cool, brand, strain });
       count++;
     }
   }

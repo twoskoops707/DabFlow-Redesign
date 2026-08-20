@@ -6,15 +6,24 @@ const PHASE_COLORS = {
   cool: '#2ECC8A',
 };
 
-let _timerInterval = null;
-let _timerState = 'idle'; // idle | running | paused | complete
-let _phases = [];
-let _currentPhaseIdx = 0;
-let _phaseElapsed = 0;
-let _holdStartHeld = false;
-let _holdTimer = null;
-let _sessionStart = null;
-let _wakeLock = null;
+const DAB_PHRASES = ['enjoy', 'glazed', 'elevated', 'sauced', 'lifted', 'zooted'];
+
+let _timerInterval     = null;
+let _timerState        = 'idle'; // idle | running | paused | complete
+let _phases            = [];
+let _currentPhaseIdx   = 0;
+let _phaseElapsed      = 0;
+let _holdStartHeld     = false;
+let _holdTimer         = null;
+let _sessionStart      = null;
+let _wakeLock          = null;
+let _selectedRating    = 0;
+let _editMode          = false;
+let _editTs            = null;
+let _notesAutoClose    = null;
+let _countdownInterval = null;
+
+// ── Timer ring ──────────────────────────────────────────────────────────────
 
 function initTimer() {
   const canvas = document.getElementById('timer-ring');
@@ -22,7 +31,6 @@ function initTimer() {
   canvas.width  = (canvas.offsetWidth  * window.devicePixelRatio) || 600;
   canvas.height = (canvas.offsetHeight * window.devicePixelRatio) || 600;
 
-  // Inject reset icon if not yet set
   const rb = document.getElementById('timer-reset-btn');
   if (rb && !rb.dataset.iconSet && typeof getIcon === 'function') {
     rb.innerHTML = getIcon('chevron-left', 20);
@@ -43,13 +51,11 @@ function buildPhases(config) {
 
 function _ringSetup(canvas) {
   const ctx = canvas.getContext('2d');
-  const W = canvas.width;
-  const H = canvas.height;
-  const cx = W / 2;
-  const cy = H / 2;
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
   const r  = Math.min(W, H) * 0.42;
   const lw = W * 0.07;
-  const gap = 0.04; // radians between segments
+  const gap = 0.04;
   return { ctx, W, H, cx, cy, r, lw, gap };
 }
 
@@ -57,62 +63,42 @@ function drawRingIdle() {
   const canvas = document.getElementById('timer-ring');
   if (!canvas) return;
   const { ctx, W, H, cx, cy, r, lw, gap } = _ringSetup(canvas);
-
-  // Use a 3-segment idle ring regardless of _phases state
-  const idlePhases = [
-    { color: PHASE_COLORS.heat },
-    { color: PHASE_COLORS.hold },
-    { color: PHASE_COLORS.cool },
-  ];
+  const idlePhases = [PHASE_COLORS.heat, PHASE_COLORS.hold, PHASE_COLORS.cool];
   const n = idlePhases.length;
   const segSize = (2 * Math.PI - gap * n) / n;
   const startAngle = -Math.PI / 2;
-
   ctx.clearRect(0, 0, W, H);
-
-  idlePhases.forEach((phase, i) => {
-    const segStart = startAngle + i * (segSize + gap);
-    const segEnd   = segStart + segSize;
+  idlePhases.forEach((_, i) => {
+    const s = startAngle + i * (segSize + gap);
     ctx.beginPath();
-    ctx.arc(cx, cy, r, segStart, segEnd);
+    ctx.arc(cx, cy, r, s, s + segSize);
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth   = lw;
-    ctx.lineCap     = 'round';
+    ctx.lineWidth = lw;
+    ctx.lineCap  = 'round';
     ctx.stroke();
   });
 }
 
 function drawRingProgress(phaseIdx, progress) {
-  // progress: 0–1 within current phase
   const canvas = document.getElementById('timer-ring');
-  if (!canvas) return;
+  if (!canvas || !_phases.length) return;
   const { ctx, W, H, cx, cy, r, lw, gap } = _ringSetup(canvas);
-
-  const phases = _phases;
-  if (!phases.length) return;
-
-  const n = phases.length;
+  const n = _phases.length;
   const segSize = (2 * Math.PI - gap * n) / n;
   const startAngle = -Math.PI / 2;
-
   ctx.clearRect(0, 0, W, H);
-
-  phases.forEach((phase, i) => {
-    const segStart = startAngle + i * (segSize + gap);
-    const segEnd   = segStart + segSize;
-
-    // Dim background track
+  _phases.forEach((phase, i) => {
+    const s = startAngle + i * (segSize + gap);
+    const e = s + segSize;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, segStart, segEnd);
+    ctx.arc(cx, cy, r, s, e);
     ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth   = lw;
-    ctx.lineCap     = 'round';
+    ctx.lineWidth = lw;
+    ctx.lineCap  = 'round';
     ctx.stroke();
-
     if (i < phaseIdx) {
-      // Completed phase — full arc at 50% opacity
       ctx.beginPath();
-      ctx.arc(cx, cy, r, segStart, segEnd);
+      ctx.arc(cx, cy, r, s, e);
       ctx.strokeStyle  = phase.color;
       ctx.globalAlpha  = 0.5;
       ctx.lineWidth    = lw;
@@ -120,25 +106,23 @@ function drawRingProgress(phaseIdx, progress) {
       ctx.stroke();
       ctx.globalAlpha  = 1;
     } else if (i === phaseIdx) {
-      // Current phase — partial fill
-      const fillEnd = segStart + segSize * Math.min(progress, 1);
-      if (fillEnd > segStart) {
+      const fillEnd = s + segSize * Math.min(progress, 1);
+      if (fillEnd > s) {
         ctx.beginPath();
-        ctx.arc(cx, cy, r, segStart, fillEnd);
+        ctx.arc(cx, cy, r, s, fillEnd);
         ctx.strokeStyle = phase.color;
         ctx.lineWidth   = lw;
         ctx.lineCap     = 'round';
         ctx.stroke();
       }
     }
-    // Future phases: dim track only (already drawn above)
   });
 }
 
 function updateTimerDisplay(text, sub) {
-  const el    = document.getElementById('timer-display');
+  const el = document.getElementById('timer-display');
   const subEl = document.getElementById('timer-sub');
-  if (el)    el.textContent  = text;
+  if (el) el.textContent = text;
   if (subEl) subEl.textContent = sub !== undefined ? sub : '';
 }
 
@@ -149,25 +133,19 @@ function updatePhaseLabel(text) {
 
 function formatSeconds(s) {
   const secs = Math.max(0, Math.ceil(s));
-  const m    = Math.floor(secs / 60);
-  const sec  = secs % 60;
+  const m = Math.floor(secs / 60);
+  const sec = secs % 60;
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
-function handleTimerBtn() {
-  if (_timerState === 'running') {
-    pauseTimer();
-    return;
-  }
-  if (_timerState === 'paused') {
-    resumeTimer();
-    return;
-  }
-  if (_timerState === 'complete') {
-    return; // "Done" state — user must rate or reset
-  }
+// ── Timer controls ───────────────────────────────────────────────────────────
 
-  // idle state — set up hold detection for easter egg
+function handleTimerBtn() {
+  if (_timerState === 'running') { pauseTimer(); return; }
+  if (_timerState === 'paused')  { resumeTimer(); return; }
+  if (_timerState === 'complete') return;
+
+  // idle — hold detection for easter egg
   const btn = document.getElementById('timer-start-btn');
   _holdStartHeld = true;
   if (btn) btn.textContent = 'Hold...';
@@ -181,7 +159,6 @@ function handleTimerBtn() {
     }
   }, 4200);
 
-  // Normal tap releases pointer before 4.2s — cancel hold and start immediately
   btn.addEventListener('pointerup',    cancelHold, { once: true });
   btn.addEventListener('pointerleave', cancelHold, { once: true });
 }
@@ -197,7 +174,7 @@ function cancelHold() {
 }
 
 function startTimer() {
-  const config = window._timerConfig || { heat: 45, hold: 8, cool: 30 };
+  const config  = window._timerConfig || { heat: 45, hold: 8, cool: 30 };
   _phases          = buildPhases(config);
   _currentPhaseIdx = 0;
   _phaseElapsed    = 0;
@@ -206,7 +183,7 @@ function startTimer() {
 
   const btn      = document.getElementById('timer-start-btn');
   const resetBtn = document.getElementById('timer-reset-btn');
-  if (btn)      btn.textContent      = 'Pause';
+  if (btn)      btn.textContent        = 'Pause';
   if (resetBtn) resetBtn.style.display = 'flex';
 
   if (_phases.length) updatePhaseLabel(_phases[0].label);
@@ -230,6 +207,14 @@ function timerTick() {
 
   if (_phaseElapsed >= phase.duration) {
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+    // Pulse the ring wrap on phase change
+    const wrap = document.getElementById('timer-ring-wrap');
+    if (wrap) {
+      wrap.classList.add('phase-pulse');
+      wrap.addEventListener('animationend', () => wrap.classList.remove('phase-pulse'), { once: true });
+    }
+
     _currentPhaseIdx++;
     _phaseElapsed = 0;
 
@@ -272,14 +257,13 @@ function resetTimer() {
 
   const btn      = document.getElementById('timer-start-btn');
   const resetBtn = document.getElementById('timer-reset-btn');
-  const ratingEl = document.getElementById('timer-rating');
   if (btn)      btn.textContent        = 'Start';
   if (resetBtn) resetBtn.style.display = 'none';
-  if (ratingEl) ratingEl.style.display = 'none';
 
   updateTimerDisplay('--:--', '');
   updatePhaseLabel('');
   drawRingIdle();
+  hideSessionNotesPanel();
 }
 
 function completeSession() {
@@ -289,40 +273,160 @@ function completeSession() {
   _wakeLock?.release().catch(() => {}); _wakeLock = null;
 
   const btn      = document.getElementById('timer-start-btn');
-  const ratingEl = document.getElementById('timer-rating');
+  const resetBtn = document.getElementById('timer-reset-btn');
   if (btn)      btn.textContent        = 'Done';
-  if (ratingEl) ratingEl.style.display = 'block';
+  if (resetBtn) resetBtn.style.display = 'flex';
 
-  updateTimerDisplay('Done', 'Rate your session');
+  updateTimerDisplay('Done', 'nice one');
   updatePhaseLabel('Complete');
   if (_phases.length) drawRingProgress(_phases.length - 1, 1);
 
   if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+
+  // Completion phrase animation, then show session notes panel
+  showDabCompleteAnimation();
+  setTimeout(() => showSessionNotesPanel(), 1900);
 }
 
-function rateSession(rating) {
-  // Highlight selected stars
-  document.querySelectorAll('#timer-rating button').forEach((btn, i) => {
-    btn.style.opacity = i < rating ? '1' : '0.3';
+// ── Completion animation ─────────────────────────────────────────────────────
+
+function showDabCompleteAnimation() {
+  const phrase  = DAB_PHRASES[Math.floor(Math.random() * DAB_PHRASES.length)];
+  const overlay = document.getElementById('dab-complete-overlay');
+  const text    = document.getElementById('dab-complete-text');
+  if (!overlay || !text) return;
+  text.textContent = phrase;
+  // Force reflow so re-triggering animation works
+  void overlay.offsetWidth;
+  overlay.classList.add('show');
+  setTimeout(() => overlay.classList.remove('show'), 2400);
+}
+
+// ── Session notes panel ───────────────────────────────────────────────────────
+
+function showSessionNotesPanel(existing) {
+  _selectedRating = 0;
+  _editMode  = !!existing && !!existing.ts && existing.ts !== (_sessionStart || Date.now());
+  _editTs    = _editMode ? existing.ts : null;
+
+  // Reset form
+  const brandEl  = document.getElementById('session-brand');
+  const strainEl = document.getElementById('session-strain');
+  const subtitle = document.getElementById('session-notes-subtitle');
+  if (brandEl)  brandEl.value  = existing ? (existing.brand  || '') : '';
+  if (strainEl) strainEl.value = existing ? (existing.strain || '') : '';
+  if (subtitle) subtitle.textContent = _editMode ? 'Editing past session' : 'Log what you\'re smoking';
+
+  // Update strain list for pre-populated brand
+  if (typeof updateStrainList === 'function') {
+    updateStrainList(brandEl ? brandEl.value.trim() : '');
+  }
+
+  // Pre-select rating if editing
+  if (existing && existing.rating) selectRating(existing.rating);
+  else {
+    document.querySelectorAll('#session-stars button').forEach(btn => btn.classList.remove('selected'));
+  }
+
+  // Show panel + overlay
+  const panel   = document.getElementById('session-notes-panel');
+  const overlay = document.getElementById('session-notes-overlay');
+  if (panel)   panel.classList.add('open');
+  if (overlay) overlay.classList.add('open');
+
+  // 30-second auto-close
+  let remaining = 30;
+  const countdownEl = document.getElementById('session-notes-countdown');
+  if (countdownEl) countdownEl.textContent = '';
+
+  _countdownInterval = setInterval(() => {
+    remaining--;
+    if (countdownEl && remaining <= 10) {
+      countdownEl.textContent = `Auto-closing in ${remaining}s`;
+    }
+    if (remaining <= 0) {
+      clearInterval(_countdownInterval);
+      hideSessionNotesPanel();
+      if (typeof showToast === 'function') showToast('Tap Edit on Last Session to add notes');
+    }
+  }, 1000);
+
+  _notesAutoClose = setTimeout(() => {
+    clearInterval(_countdownInterval);
+    hideSessionNotesPanel();
+    if (typeof showToast === 'function') showToast('Tap Edit on Last Session to add notes');
+  }, 30000);
+}
+
+function hideSessionNotesPanel() {
+  clearTimeout(_notesAutoClose);
+  clearInterval(_countdownInterval);
+  const panel   = document.getElementById('session-notes-panel');
+  const overlay = document.getElementById('session-notes-overlay');
+  if (panel)   panel.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+  const countdownEl = document.getElementById('session-notes-countdown');
+  if (countdownEl) countdownEl.textContent = '';
+}
+
+function selectRating(n) {
+  _selectedRating = n;
+  document.querySelectorAll('#session-stars button').forEach((btn, i) => {
+    btn.classList.toggle('selected', i < n);
   });
-
-  const config = window._timerConfig || {};
-  window.dispatchEvent(new CustomEvent('session-complete', {
-    detail: {
-      ts:       _sessionStart || Date.now(),
-      heat:     config.heat     || 0,
-      hold:     config.hold     || 0,
-      cool:     config.cool     || 0,
-      material: window._selectedMaterial || 'Quartz',
-      rating,
-    },
-  }));
-
-  setTimeout(() => {
-    resetTimer();
-    if (typeof switchScreen === 'function') switchScreen('home');
-  }, 800);
 }
+
+function saveSessionNotes() {
+  const rating = _selectedRating || 3;
+  const brand  = document.getElementById('session-brand')?.value?.trim()  || '';
+  const strain = document.getElementById('session-strain')?.value?.trim() || '';
+
+  if (_editMode && _editTs) {
+    window.dispatchEvent(new CustomEvent('session-edit', {
+      detail: { ts: _editTs, brand, strain, rating },
+    }));
+    _editMode = false;
+    _editTs   = null;
+    hideSessionNotesPanel();
+  } else {
+    const config = window._timerConfig || {};
+    window.dispatchEvent(new CustomEvent('session-complete', {
+      detail: {
+        ts:       _sessionStart || Date.now(),
+        heat:     config.heat  || 0,
+        hold:     config.hold  || 0,
+        cool:     config.cool  || 0,
+        material: window._selectedMaterial || 'Quartz',
+        brand,
+        strain,
+        rating,
+      },
+    }));
+    hideSessionNotesPanel();
+    setTimeout(() => {
+      resetTimer();
+      if (typeof switchScreen === 'function') switchScreen('home');
+    }, 430);
+  }
+}
+
+function skipSessionNotes() {
+  if (!document.getElementById('session-notes-panel')?.classList.contains('open')) return;
+  hideSessionNotesPanel();
+  if (!_editMode) {
+    setTimeout(() => resetTimer(), 430);
+  }
+}
+
+// Called from stats page "Add Notes" buttons
+function editSessionByTs(ts) {
+  const sessions = typeof getSessions === 'function' ? getSessions() : [];
+  const session  = sessions.find(s => s.ts === ts);
+  if (!session) return;
+  showSessionNotesPanel(session);
+}
+
+// ── Easter eggs ──────────────────────────────────────────────────────────────
 
 function triggerBloomEasterEgg() {
   const container = document.getElementById('timer-bloom');
@@ -337,10 +441,8 @@ function triggerBloomEasterEgg() {
         <polygon
           points="60,10 75,35 103,35 82,52 90,78 60,62 30,78 38,52 17,35 45,35"
           stroke="${cool}" stroke-width="1.5" fill="none" opacity="0.8"/>
-        <circle cx="60" cy="60" r="25"
-          stroke="${heat}" stroke-width="1" fill="none"/>
-        <circle cx="60" cy="60" r="45"
-          stroke="${hold}" stroke-width="0.5" fill="none" opacity="0.4"/>
+        <circle cx="60" cy="60" r="25" stroke="${heat}" stroke-width="1" fill="none"/>
+        <circle cx="60" cy="60" r="45" stroke="${hold}" stroke-width="0.5" fill="none" opacity="0.4"/>
       </svg>
     </div>`;
   setTimeout(() => { container.innerHTML = ''; }, 1300);

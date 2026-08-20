@@ -9,6 +9,13 @@ const PRESETS = [
   { id: 'custom',  label: 'Custom',  heat: 0,  hold: 0,  cool: 0  },
 ];
 
+function staggerCards(container) {
+  if (!container) return;
+  Array.from(container.querySelectorAll('.fade-up')).forEach((card, i) => {
+    card.style.animationDelay = `${i * 55}ms`;
+  });
+}
+
 function switchScreen(name) {
   const prev = document.querySelector('.screen.active');
   const next = document.getElementById('screen-' + name);
@@ -17,20 +24,25 @@ function switchScreen(name) {
   if (prev) {
     prev.classList.add('exit-left');
     prev.classList.remove('active');
-    setTimeout(() => prev.classList.remove('exit-left'), 300);
+    setTimeout(() => prev.classList.remove('exit-left'), 320);
   }
 
   next.classList.add('active');
   currentScreen = name;
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.screen === name);
+    const isActive = btn.dataset.screen === name;
+    btn.classList.toggle('active', isActive);
+    if (isActive) {
+      btn.classList.remove('nav-tap');
+      void btn.offsetWidth;
+      btn.classList.add('nav-tap');
+      btn.addEventListener('animationend', () => btn.classList.remove('nav-tap'), { once: true });
+    }
   });
 
-  if (name === 'timer') {
-    setTimeout(initTimer, 50);
-  }
-  if (name === 'stats') setTimeout(renderStats, 50);
+  if (name === 'timer') setTimeout(initTimer, 50);
+  if (name === 'stats')  setTimeout(renderStats, 50);
 }
 
 function initNav() {
@@ -55,8 +67,6 @@ function getStreak() {
   const days = new Set(sessions.map(s => new Date(s.ts).toDateString()));
   let streak = 0;
   const d = new Date();
-  // Count streak starting from today; fall back to yesterday so the streak
-  // stays alive if the user hasn't sessioned yet today.
   if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);
   while (days.has(d.toDateString())) {
     streak++;
@@ -95,10 +105,34 @@ function startPreset(id) {
 }
 
 function renderHome() {
-  const streak = getStreak();
+  const streak      = getStreak();
   const lastSession = getSessions().slice(-1)[0];
-  const el = document.getElementById('screen-home');
+  const el          = document.getElementById('screen-home');
   if (!el) return;
+
+  const lastSessionHTML = lastSession ? (() => {
+    const meta = [lastSession.brand, lastSession.strain].filter(Boolean).join(' · ');
+    return `
+      <p class="section-title">Last Session</p>
+      <div class="card fade-up">
+        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);">
+          <div style="flex:1;min-width:0;">
+            <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${lastSession.material || 'Session'}</div>
+            <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              ${meta || formatRelTime(lastSession.ts)}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--sp-3);flex-shrink:0;">
+            ${lastSession.rating ? `<span style="font-size:var(--font-lg);color:var(--accent);">${'★'.repeat(lastSession.rating)}</span>` : ''}
+            <button onpointerdown="editSessionByTs(${lastSession.ts})"
+              style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:var(--sp-2);-webkit-tap-highlight-color:transparent;">
+              ${getIcon('edit', 18)}
+            </button>
+          </div>
+        </div>
+      </div>`;
+  })() : '';
+
   el.innerHTML = `
     <div class="screen-inner">
       <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-6);">
@@ -109,7 +143,7 @@ function renderHome() {
       <p class="section-title">Quick Start</p>
       <div style="display:grid;gap:var(--sp-3);margin-bottom:var(--sp-6);">
         ${PRESETS.map(p => `
-          <button class="card fade-up" onclick="startPreset('${p.id}')"
+          <button class="card fade-up" onpointerdown="startPreset('${p.id}')"
             style="width:100%;text-align:left;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5);cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:space-between;">
             <div>
               <div class="font-display" style="font-size:var(--font-lg);font-weight:600;color:var(--text-primary);">${p.label}</div>
@@ -120,18 +154,10 @@ function renderHome() {
             <span style="color:var(--text-muted);">${getIcon('chevron-right', 18)}</span>
           </button>`).join('')}
       </div>
-      ${lastSession ? `
-        <p class="section-title">Last Session</p>
-        <div class="card fade-up">
-          <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${lastSession.material || 'Session'}</div>
-              <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--sp-1);">${formatRelTime(lastSession.ts)}</div>
-            </div>
-            <div class="font-mono" style="font-size:var(--font-2xl);color:var(--text-primary);">${lastSession.rating ? '★'.repeat(lastSession.rating) : ''}</div>
-          </div>
-        </div>` : ''}
+      ${lastSessionHTML}
     </div>`;
+
+  staggerCards(el);
 }
 
 const TOP_ARTISTS = [
@@ -249,9 +275,9 @@ function timerSettingRow(key, label, value) {
       <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);">seconds</div>
     </div>
     <div style="display:flex;align-items:center;gap:var(--sp-3);">
-      <button onclick="adjustSetting('${key}',-5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">−</button>
+      <button onpointerdown="adjustSetting('${key}',-5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">−</button>
       <span class="font-mono" id="setting-${key}" style="min-width:36px;text-align:center;color:var(--text-primary);">${value}</span>
-      <button onclick="adjustSetting('${key}',5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">+</button>
+      <button onpointerdown="adjustSetting('${key}',5)" style="width:32px;height:32px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;line-height:1;">+</button>
     </div>
   </div>`;
 }
@@ -259,7 +285,7 @@ function timerSettingRow(key, label, value) {
 function toggleRow(key, label, value) {
   return `<div style="display:flex;align-items:center;justify-content:space-between;">
     <span class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${label}</span>
-    <button onclick="toggleSetting('${key}',this)"
+    <button onpointerdown="toggleSetting('${key}',this)"
       style="width:48px;height:26px;border-radius:var(--r-full);border:none;cursor:pointer;position:relative;transition:background 200ms;background:${value ? 'var(--accent)' : 'var(--bg-elevated)'};"
       data-on="${value}">
       <span style="position:absolute;top:3px;left:${value ? '24px' : '3px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 200ms;"></span>
@@ -312,13 +338,14 @@ function renderSettings() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Seed data for demo/premium builds
   if (window.BUILD_VARIANT === 'demo' || window.BUILD_VARIANT === 'premium') {
     generateSeedData();
   }
   injectMoleculeBg();
   initAds();
   initNav();
+  populateBrandList();
+  updateStrainList('');
   renderHome();
   renderGlass();
   renderSettings();
@@ -327,4 +354,16 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('session-complete', (e) => {
   saveSession(e.detail);
   renderHome();
+});
+
+window.addEventListener('session-edit', (e) => {
+  const { ts, brand, strain, rating } = e.detail;
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.ts === ts);
+  if (idx !== -1) {
+    sessions[idx] = { ...sessions[idx], brand, strain, rating };
+    localStorage.setItem('dabflow2_sessions', JSON.stringify(sessions));
+  }
+  renderHome();
+  if (currentScreen === 'stats' && typeof renderStats === 'function') renderStats();
 });
