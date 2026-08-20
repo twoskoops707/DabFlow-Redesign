@@ -1,0 +1,66 @@
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+
+/* ── Color tokens ── */
+:root {
+  --bg-base:        #080A0C;
+  --bg-surface:     #0F1215;
+  --bg-elevated:    #161B1F;
+  --accent:         #2ECC8A;
+  --accent-dim:     rgba(46, 204, 138, 0.12);
+  --phase-heat:     #5B9CF6;
+  --phase-hold:     #F5A623;
+  --phase-cool:     #2ECC8A;
+  --text-primary:   #F0F4F8;
+  --text-secondary: #8A9BAE;
+  --text-muted:     #4A5568;
+  --border:         rgba(255, 255, 255, 0.06);
+}
+
+/* ── Typography scale ── */
+:root {
+  --font-xs:   0.75rem;
+  --font-sm:   0.875rem;
+  --font-md:   1rem;
+  --font-lg:   1.125rem;
+  --font-xl:   1.25rem;
+  --font-2xl:  1.5rem;
+  --font-3xl:  2rem;
+  --font-4xl:  3rem;
+  --font-5xl:  4rem;
+}
+
+/* ── Spacing scale ── */
+:root {
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+}
+
+/* ── Radius ── */
+:root {
+  --r-sm:   6px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-full: 9999px;
+}
+
+/* ── Font classes ── */
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+.font-mono    { font-family: 'Space Mono', monospace; }
+.font-body    { font-family: 'Inter', sans-serif; }
+
+/* ── Safe area ── */
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
