@@ -132,7 +132,6 @@ function renderHome() {
 // Stubs — filled in later tasks
 function renderGlass() {}
 function renderSettings() {}
-function renderStats() {}
 
 document.addEventListener('DOMContentLoaded', () => {
   // Seed data for demo/premium builds
