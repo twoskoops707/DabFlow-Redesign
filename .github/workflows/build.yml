@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APKs
 
 on:
   push:
@@ -9,9 +9,49 @@ permissions:
   contents: write
 
 jobs:
-  build-apk:
-    name: Build Debug APK
+
+  # ── Create the release once, share upload_url with matrix jobs ──
+  setup:
+    name: Create Release
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.version.outputs.VERSION }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
+          release_name: DabFlow v${{ steps.version.outputs.VERSION }} (build ${{ github.run_number }})
+          body: |
+            Ember UI — 3 APK variants
+
+            - **DabFlow-free.apk** — Mantis ads, fresh install (no demo data)
+            - **DabFlow-demo.apk** — Mantis ads, 100 sessions pre-seeded
+            - **DabFlow-premium.apk** — No ads, 100 sessions pre-seeded
+          draft: false
+          prerelease: false
+
+  # ── Build each variant in parallel ──
+  build-apk:
+    name: Build ${{ matrix.variant }} APK
+    needs: setup
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        variant: [free, demo, premium]
 
     steps:
       - name: Checkout
@@ -31,6 +71,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Inject BUILD_VARIANT into index.html
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          sed -i "s/window\.BUILD_VARIANT = '[^']*'/window.BUILD_VARIANT = '$VARIANT'/" www/index.html
+          echo "Injected BUILD_VARIANT=$VARIANT"
+          grep "BUILD_VARIANT" www/index.html
+
       - name: Add Capacitor Android platform
         run: npx cap add android
 
@@ -44,28 +92,12 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Get version
-        id: version
-        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
-          release_name: DabFlow v${{ steps.version.outputs.VERSION }} (build ${{ github.run_number }})
-          body: Ember UI — debug APK build ${{ github.run_number }}
-          draft: false
-          prerelease: false
-
       - name: Upload APK to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.setup.outputs.upload_url }}
           asset_path: android/app/build/outputs/apk/debug/app-debug.apk
-          asset_name: DabFlow-Ember-v${{ steps.version.outputs.VERSION }}.apk
+          asset_name: DabFlow-${{ matrix.variant }}.apk
           asset_content_type: application/vnd.android.package-archive
