@@ -14,6 +14,7 @@ let _phaseElapsed = 0;
 let _holdStartHeld = false;
 let _holdTimer = null;
 let _sessionStart = null;
+let _wakeLock = null;
 
 function initTimer() {
   const canvas = document.getElementById('timer-ring');
@@ -210,9 +211,8 @@ function startTimer() {
 
   if (_phases.length) updatePhaseLabel(_phases[0].label);
 
-  // Request screen wake lock so display stays on during session
   if ('wakeLock' in navigator) {
-    navigator.wakeLock.request('screen').catch(() => {});
+    navigator.wakeLock.request('screen').then(s => { _wakeLock = s; }).catch(() => {});
   }
 
   clearInterval(_timerInterval);
@@ -244,6 +244,7 @@ function timerTick() {
 function pauseTimer() {
   _timerState = 'paused';
   clearInterval(_timerInterval);
+  _wakeLock?.release().catch(() => {}); _wakeLock = null;
   const btn = document.getElementById('timer-start-btn');
   if (btn) btn.textContent = 'Resume';
 }
@@ -259,6 +260,7 @@ function resetTimer() {
   clearInterval(_timerInterval);
   _timerInterval   = null;
   _timerState      = 'idle';
+  _wakeLock?.release().catch(() => {}); _wakeLock = null;
   _phases          = [];
   _currentPhaseIdx = 0;
   _phaseElapsed    = 0;
@@ -281,6 +283,7 @@ function completeSession() {
   clearInterval(_timerInterval);
   _timerInterval = null;
   _timerState    = 'complete';
+  _wakeLock?.release().catch(() => {}); _wakeLock = null;
 
   const btn      = document.getElementById('timer-start-btn');
   const ratingEl = document.getElementById('timer-rating');

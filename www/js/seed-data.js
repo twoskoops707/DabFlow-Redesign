@@ -13,8 +13,8 @@ function generateSeedData() {
   ];
 
   const sessions = [];
-  const now = Date.now();
   const dayMs = 86400000;
+  const localMidnight = new Date().setHours(0, 0, 0, 0);
 
   const activeDays = new Set();
   for (let i = 0; i < 90; i++) {
@@ -32,8 +32,7 @@ function generateSeedData() {
       const hourWeights = [0,0,0,0,0,0,1,1,2,3,3,3,4,4,5,5,6,8,9,10,9,8,7,4];
       const hour = weightedRandom(hourWeights);
       const minute = Math.floor(Math.random() * 60);
-      const dayStart = now - (dayOffset * dayMs);
-      const ts = dayStart - (now % dayMs) + hour * 3600000 + minute * 60000;
+      const ts = localMidnight - (dayOffset * dayMs) + hour * 3600000 + minute * 60000;
 
       const cfg = configs[Math.floor(Math.random() * configs.length)];
       const material = materials[Math.floor(Math.random() * materials.length)];
