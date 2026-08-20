@@ -135,8 +135,9 @@ function renderSettings() {}
 function renderStats() {}
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Seed data for demo/premium builds
   if (window.BUILD_VARIANT === 'demo' || window.BUILD_VARIANT === 'premium') {
-    if (typeof generateSeedData === 'function') generateSeedData();
+    generateSeedData();
   }
   injectMoleculeBg();
   initNav();
