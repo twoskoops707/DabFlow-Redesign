@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     name: Build Debug APK
@@ -41,9 +44,28 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: DabFlow-Ember-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+          tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
+          release_name: DabFlow v${{ steps.version.outputs.VERSION }} (build ${{ github.run_number }})
+          body: Ember UI — debug APK build ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload APK to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/debug/app-debug.apk
+          asset_name: DabFlow-Ember-v${{ steps.version.outputs.VERSION }}.apk
+          asset_content_type: application/vnd.android.package-archive
