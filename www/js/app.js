@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateSeedData();
   }
   injectMoleculeBg();
+  initAds();
   initNav();
   renderHome();
   renderGlass();
