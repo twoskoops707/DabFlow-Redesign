@@ -168,3 +168,118 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fade-up 340ms ease-out both; }
+
+/* ── Age gate overlay ── */
+.age-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.age-gate-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.age-gate-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 320px;
+}
+
+/* ── Vapor Rise completion overlay ── */
+.vapor-rise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  background: rgba(0,0,0,0.65);
+}
+
+.vapor-rise-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.vapor-bg {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 260px;
+  pointer-events: none;
+}
+
+.wisp {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.22), transparent 70%);
+  filter: blur(6px);
+}
+
+.va {
+  width: 70px;
+  height: 90px;
+  left: 10px;
+  animation: wisp-a 3s ease-out infinite;
+}
+
+.vb {
+  width: 90px;
+  height: 110px;
+  left: 35px;
+  animation: wisp-b 3.5s ease-out 0.8s infinite;
+}
+
+.vc {
+  width: 60px;
+  height: 80px;
+  left: 60px;
+  animation: wisp-a 2.8s ease-out 1.6s infinite;
+}
+
+@keyframes wisp-a {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  12%  { opacity: 0.55; }
+  70%  { opacity: 0.3; transform: translateY(-90px) scaleX(1.4); }
+  100% { opacity: 0; transform: translateY(-130px) scaleX(1.6); }
+}
+
+@keyframes wisp-b {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  15%  { opacity: 0.45; }
+  65%  { opacity: 0.25; transform: translateY(-80px) scaleX(1.3); }
+  100% { opacity: 0; transform: translateY(-120px) scaleX(1.5); }
+}
+
+.vapor-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin-top: -80px;
+}
+
+.vapor-complete {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 20px rgba(255,255,255,0.3);
+  margin-bottom: 1rem;
+}

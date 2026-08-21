@@ -1,0 +1,79 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-a" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#080C10"/>
+      <stop offset="100%" stop-color="#0C1218"/>
+    </linearGradient>
+    <linearGradient id="ring-a" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="55%" stop-color="#2ECC8A"/>
+      <stop offset="100%" stop-color="#5B9CF6"/>
+    </linearGradient>
+    <linearGradient id="rig-a" x1="256" y1="180" x2="256" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2ECC8A"/>
+      <stop offset="100%" stop-color="#1A9E6A"/>
+    </linearGradient>
+    <filter id="glow-a" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="ambient-a" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2ECC8A" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#2ECC8A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bg-a)"/>
+
+  <!-- Ambient center glow -->
+  <circle cx="256" cy="256" r="200" fill="url(#ambient-a)"/>
+
+  <!-- Outer track ring (270° arc, gap at bottom) -->
+  <circle cx="256" cy="256" r="168"
+    fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"
+    stroke-dasharray="791.7 263.9" transform="rotate(135 256 256)"/>
+
+  <!-- Progress arc — red (heat) to green (cool) gradient -->
+  <circle cx="256" cy="256" r="168"
+    fill="none" stroke="url(#ring-a)" stroke-width="14" stroke-linecap="round"
+    stroke-dasharray="595 461" transform="rotate(135 256 256)"
+    filter="url(#glow-soft)"/>
+
+  <!-- Inner subtle ring -->
+  <circle cx="256" cy="256" r="136"
+    fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+
+  <!-- DAB RIG (centered at 256,256) -->
+  <g transform="translate(256,256)">
+    <!-- Vapor wisps from nail -->
+    <path d="M-6 -90 Q-14 -112 -10 -130" fill="none" stroke="rgba(165,216,255,0.6)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M0 -92 Q0 -115 0 -134"     fill="none" stroke="rgba(165,216,255,0.8)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M6 -90 Q14 -112 10 -130"   fill="none" stroke="rgba(165,216,255,0.6)" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Banger/nail -->
+    <circle cx="0" cy="-76" r="20" fill="url(#rig-a)" filter="url(#glow-a)"/>
+    <circle cx="0" cy="-76" r="12" fill="rgba(255,255,255,0.3)"/>
+    <!-- Heat rings -->
+    <circle cx="0" cy="-76" r="30" fill="none" stroke="rgba(46,204,138,0.35)" stroke-width="2.5"/>
+    <circle cx="0" cy="-76" r="40" fill="none" stroke="rgba(46,204,138,0.18)" stroke-width="1.5"/>
+
+    <!-- Neck -->
+    <rect x="-10" y="-58" width="20" height="60" rx="4" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
+
+    <!-- Water chamber body -->
+    <ellipse cx="0" cy="18" rx="46" ry="18" fill="rgba(91,156,246,0.18)" stroke="rgba(91,156,246,0.35)" stroke-width="2.5"/>
+    <rect x="-46" y="0" width="92" height="18" fill="rgba(91,156,246,0.12)" stroke="rgba(91,156,246,0.28)" stroke-width="2.5"/>
+    <ellipse cx="0" cy="0"  rx="46" ry="18" fill="rgba(91,156,246,0.22)" stroke="rgba(91,156,246,0.4)"  stroke-width="2.5"/>
+
+    <!-- Base -->
+    <path d="M-32 36 L-38 58 L38 58 L32 36 Z" fill="rgba(46,204,138,0.4)" stroke="rgba(46,204,138,0.6)" stroke-width="2"/>
+  </g>
+
+  <!-- DF wordmark -->
+  <text x="72" y="460" font-family="'Space Mono',monospace" font-size="38" font-weight="700" fill="rgba(46,204,138,0.35)">DF</text>
+</svg>

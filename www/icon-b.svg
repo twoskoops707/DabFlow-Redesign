@@ -1,0 +1,124 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-b" x1="0" y1="512" x2="512" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#060408"/>
+      <stop offset="100%" stop-color="#100A14"/>
+    </linearGradient>
+    <linearGradient id="gold-b" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#FFA500"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+    <linearGradient id="skull-fill" x1="256" y1="160" x2="256" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E91E8C"/>
+      <stop offset="50%" stop-color="#9C27B0"/>
+      <stop offset="100%" stop-color="#00BCD4"/>
+    </linearGradient>
+    <linearGradient id="flower-top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+    <filter id="glow-b" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="skull-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="amb-b" cx="50%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bg-b)"/>
+
+  <!-- Ambient glow -->
+  <circle cx="256" cy="240" r="210" fill="url(#amb-b)"/>
+
+  <!-- Corner marigold flowers (Day of the Dead) -->
+  <!-- Top-left -->
+  <g transform="translate(72,72)" opacity="0.7">
+    <circle cx="0" cy="0" r="14" fill="#FFB300"/>
+    <circle cx="0" cy="-20" r="8" fill="#FF8C00"/><circle cx="14" cy="-14" r="8" fill="#FF8C00"/>
+    <circle cx="20" cy="0"  r="8" fill="#FF8C00"/><circle cx="14" cy="14"  r="8" fill="#FF8C00"/>
+    <circle cx="0" cy="20"  r="8" fill="#FF8C00"/><circle cx="-14" cy="14" r="8" fill="#FF8C00"/>
+    <circle cx="-20" cy="0" r="8" fill="#FF8C00"/><circle cx="-14" cy="-14" r="8" fill="#FF8C00"/>
+    <circle cx="0" cy="0" r="7" fill="#FFD700"/>
+  </g>
+  <!-- Top-right -->
+  <g transform="translate(440,72)" opacity="0.7">
+    <circle cx="0" cy="0" r="14" fill="#FFB300"/>
+    <circle cx="0" cy="-20" r="8" fill="#E91E8C"/><circle cx="14" cy="-14" r="8" fill="#E91E8C"/>
+    <circle cx="20" cy="0"  r="8" fill="#E91E8C"/><circle cx="14" cy="14"  r="8" fill="#E91E8C"/>
+    <circle cx="0" cy="20"  r="8" fill="#E91E8C"/><circle cx="-14" cy="14" r="8" fill="#E91E8C"/>
+    <circle cx="-20" cy="0" r="8" fill="#E91E8C"/><circle cx="-14" cy="-14" r="8" fill="#E91E8C"/>
+    <circle cx="0" cy="0" r="7" fill="#FFD700"/>
+  </g>
+  <!-- Bottom-left -->
+  <g transform="translate(72,440)" opacity="0.6">
+    <circle cx="0" cy="0" r="11" fill="#FFB300"/>
+    <circle cx="0" cy="-16" r="6" fill="#00BCD4"/><circle cx="11" cy="-11" r="6" fill="#00BCD4"/>
+    <circle cx="16" cy="0"  r="6" fill="#00BCD4"/><circle cx="11" cy="11"  r="6" fill="#00BCD4"/>
+    <circle cx="0" cy="16"  r="6" fill="#00BCD4"/><circle cx="-11" cy="11" r="6" fill="#00BCD4"/>
+    <circle cx="-16" cy="0" r="6" fill="#00BCD4"/><circle cx="-11" cy="-11" r="6" fill="#00BCD4"/>
+    <circle cx="0" cy="0" r="5" fill="#FFD700"/>
+  </g>
+  <!-- Bottom-right -->
+  <g transform="translate(440,440)" opacity="0.6">
+    <circle cx="0" cy="0" r="11" fill="#FFB300"/>
+    <circle cx="0" cy="-16" r="6" fill="#9C27B0"/><circle cx="11" cy="-11" r="6" fill="#9C27B0"/>
+    <circle cx="16" cy="0"  r="6" fill="#9C27B0"/><circle cx="11" cy="11"  r="6" fill="#9C27B0"/>
+    <circle cx="0" cy="16"  r="6" fill="#9C27B0"/><circle cx="-11" cy="11" r="6" fill="#9C27B0"/>
+    <circle cx="-16" cy="0" r="6" fill="#9C27B0"/><circle cx="-11" cy="-11" r="6" fill="#9C27B0"/>
+    <circle cx="0" cy="0" r="5" fill="#FFD700"/>
+  </g>
+
+  <!-- Outer ring — gold -->
+  <circle cx="256" cy="256" r="168"
+    fill="none" stroke="rgba(255,215,0,0.08)" stroke-width="14" stroke-linecap="round"
+    stroke-dasharray="791.7 263.9" transform="rotate(135 256 256)"/>
+  <circle cx="256" cy="256" r="168"
+    fill="none" stroke="url(#gold-b)" stroke-width="14" stroke-linecap="round"
+    stroke-dasharray="595 461" transform="rotate(135 256 256)"
+    filter="url(#glow-b)"/>
+
+  <!-- Sugar skull face (centered) -->
+  <g transform="translate(256,248)">
+    <!-- Skull outer -->
+    <ellipse cx="0" cy="-10" rx="72" ry="80" fill="rgba(255,255,255,0.06)" stroke="url(#skull-fill)" stroke-width="3" filter="url(#skull-glow)"/>
+    <ellipse cx="0" cy="-10" rx="72" ry="80" fill="none" stroke="url(#skull-fill)" stroke-width="3"/>
+    <!-- Jaw -->
+    <path d="M-50 52 Q-52 72 0 74 Q52 72 50 52 Z" fill="rgba(255,255,255,0.04)" stroke="url(#skull-fill)" stroke-width="2.5"/>
+
+    <!-- Eyes — ornate circles -->
+    <circle cx="-26" cy="-20" r="20" fill="rgba(0,0,0,0.5)" stroke="#E91E8C" stroke-width="2.5"/>
+    <circle cx=" 26" cy="-20" r="20" fill="rgba(0,0,0,0.5)" stroke="#E91E8C" stroke-width="2.5"/>
+    <!-- Eye cross/flower patterns -->
+    <line x1="-26" y1="-38" x2="-26" y2="-2"  stroke="#E91E8C" stroke-width="1.5" opacity="0.7"/>
+    <line x1="-44" y1="-20" x2="-8"  y2="-20" stroke="#E91E8C" stroke-width="1.5" opacity="0.7"/>
+    <circle cx="-26" cy="-20" r="6" fill="#E91E8C" opacity="0.8"/>
+    <line x1="26" y1="-38" x2="26" y2="-2"   stroke="#00BCD4" stroke-width="1.5" opacity="0.7"/>
+    <line x1="8"  y1="-20" x2="44" y2="-20"  stroke="#00BCD4" stroke-width="1.5" opacity="0.7"/>
+    <circle cx="26" cy="-20" r="6" fill="#00BCD4" opacity="0.8"/>
+
+    <!-- Nose diamond -->
+    <path d="M0 6 L-8 16 L0 26 L8 16 Z" fill="none" stroke="#FFD700" stroke-width="2"/>
+
+    <!-- Teeth -->
+    <line x1="-24" y1="44" x2="-24" y2="62" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <line x1="-8"  y1="44" x2="-8"  y2="66" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <line x1=" 8"  y1="44" x2=" 8"  y2="66" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <line x1=" 24" y1="44" x2=" 24" y2="62" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+    <line x1="-36" y1="42" x2="-36" y2="58" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"/>
+    <line x1=" 36" y1="42" x2=" 36" y2="58" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"/>
+
+    <!-- Forehead decoration -->
+    <path d="M-30 -82 Q0 -96 30 -82" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.7"/>
+    <circle cx="-18" cy="-82" r="4" fill="#E91E8C" opacity="0.8"/>
+    <circle cx="0"   cy="-88" r="5" fill="#FFD700" opacity="0.9"/>
+    <circle cx=" 18" cy="-82" r="4" fill="#00BCD4" opacity="0.8"/>
+  </g>
+</svg>

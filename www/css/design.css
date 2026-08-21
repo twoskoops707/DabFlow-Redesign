@@ -10,9 +10,12 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(
   --bg-elevated:    #161B1F;
   --accent:         #2ECC8A;
   --accent-dim:     rgba(46, 204, 138, 0.12);
-  --phase-heat:     #5B9CF6;
-  --phase-hold:     #F5A623;
+  --phase-heat:     #EF4444;
+  --phase-hold:     #00C46A;
   --phase-cool:     #2ECC8A;
+  --arc-heat:       #EF4444;
+  --arc-hold:       #00C46A;
+  --arc-cool:       #5B9CF6;
   --text-primary:   #F0F4F8;
   --text-secondary: #8A9BAE;
   --text-muted:     #4A5568;

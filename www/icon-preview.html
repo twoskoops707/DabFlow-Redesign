@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DabFlow Icon Options</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#0a0a0f; color:#f0f4f8; font-family:'Space Grotesk',sans-serif,system-ui; padding:32px 16px 60px; }
+h1 { text-align:center; font-size:1.3rem; font-weight:700; margin-bottom:6px; }
+.sub { text-align:center; color:#4a5568; font-size:.8rem; margin-bottom:36px; text-transform:uppercase; letter-spacing:.1em; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:32px; max-width:900px; margin:0 auto; }
+.card { display:flex; flex-direction:column; align-items:center; gap:16px; padding:24px; border:2px solid rgba(255,255,255,.06); border-radius:20px; cursor:pointer; transition:border-color .2s,transform .15s; }
+.card:hover { border-color:rgba(255,255,255,.15); transform:translateY(-3px); }
+.card.selected { border-color:#2ECC8A; }
+.icon-wrap { width:160px; height:160px; border-radius:36px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.7); }
+.icon-wrap img { width:100%; height:100%; }
+.label { font-weight:700; font-size:1.1rem; letter-spacing:.04em; }
+.desc { font-size:.8rem; color:#4a5568; text-align:center; line-height:1.5; max-width:200px; }
+.tag { font-size:.65rem; padding:3px 10px; border-radius:99px; margin-top:2px; font-weight:600; letter-spacing:.08em; }
+.tag-free { background:rgba(46,204,138,.15); color:#2ECC8A; border:1px solid rgba(46,204,138,.3); }
+.tag-prem { background:rgba(255,215,0,.12); color:#FFD700; border:1px solid rgba(255,215,0,.3); }
+.tag-alt  { background:rgba(255,0,144,.12); color:#FF0090; border:1px solid rgba(255,0,144,.3); }
+</style>
+</head>
+<body>
+<h1>DabFlow Icon Options</h1>
+<p class="sub">Tap to select · one icon per APK</p>
+
+<div class="grid">
+
+  <div class="card" onclick="this.classList.toggle('selected')">
+    <div class="icon-wrap">
+      <img src="icon-a.svg" alt="Icon A">
+    </div>
+    <div class="label" style="color:#2ECC8A">A · Flow</div>
+    <div class="tag tag-free">SUGGESTED: FREE APK</div>
+    <div class="desc">Dark navy, red→green→blue arc, dab rig silhouette with vapor wisps. Clean &amp; on-brand.</div>
+  </div>
+
+  <div class="card" onclick="this.classList.toggle('selected')">
+    <div class="icon-wrap">
+      <img src="icon-b.svg" alt="Icon B">
+    </div>
+    <div class="label" style="color:#FFD700">B · Sugar Skull</div>
+    <div class="tag tag-prem">SUGGESTED: PREMIUM APK</div>
+    <div class="desc">Day of the Dead sugar skull with marigold flowers, gold arc ring. Vibrant &amp; unique.</div>
+  </div>
+
+  <div class="card" onclick="this.classList.toggle('selected')">
+    <div class="icon-wrap">
+      <img src="icon-c.svg" alt="Icon C">
+    </div>
+    <div class="label" style="color:#9B00FF">C · Neon Flame</div>
+    <div class="tag tag-alt">ALTERNATIVE</div>
+    <div class="desc">Deep purple-black, pink→purple→cyan neon arc, bold flame center. Cyberpunk energy.</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:36px;font-size:.72rem;color:#4a5568;">Let me know which goes on which APK and I'll bake them in</p>
+</body>
+</html>

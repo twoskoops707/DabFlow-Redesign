@@ -320,13 +320,51 @@ function renderAchievements(sessions) {
     { id: 'streak7',  label: '7-Day Streak', check: s => calcBestStreak(s) >= 7 },
     { id: 'streak30', label: '30-Day Streak',check: s => calcBestStreak(s) >= 30 },
   ];
-  return ACHIEVEMENTS.map(a => {
+
+  const achHTML = ACHIEVEMENTS.map(a => {
     const unlocked = a.check(sessions);
     return `<div class="chip" style="opacity:${unlocked ? 1 : 0.4};">
       <span style="color:${unlocked ? 'var(--accent)' : 'var(--text-muted)'};">${getIcon(unlocked ? 'check' : 'lock', 16)}</span>
       <span class="font-display" style="font-size:var(--font-xs);color:var(--text-secondary);margin-top:var(--sp-1);">${a.label}</span>
     </div>`;
   }).join('');
+
+  let themeHTML = '';
+  if (typeof THEMES !== 'undefined') {
+    const streak = calcBestStreak(sessions);
+    themeHTML = `
+      <div style="grid-column:1/-1;margin-top:var(--sp-4);">
+        <p class="section-title" style="margin-bottom:var(--sp-3);">Themes</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);">
+          ${THEMES.map(theme => {
+            let unlocked;
+            if (window.BUILD_VARIANT === 'premium') unlocked = true;
+            else if (theme.unlockType === 'always') unlocked = true;
+            else if (theme.unlockType === 'sessions') unlocked = sessions.length >= theme.unlockVal;
+            else if (theme.unlockType === 'streak') unlocked = streak >= theme.unlockVal;
+            else unlocked = false;
+
+            const swatch = theme.arcCool
+              ? theme.arcCool
+              : 'conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)';
+            const hint = !unlocked
+              ? (theme.unlockType === 'sessions'
+                  ? `${theme.unlockVal} sess`
+                  : theme.unlockType === 'streak'
+                    ? `${theme.unlockVal}-day`
+                    : '')
+              : '';
+            return `<div class="chip" style="opacity:${unlocked ? 1 : 0.4};flex-direction:column;gap:var(--sp-1);align-items:center;padding:var(--sp-2);">
+              <span style="width:14px;height:14px;border-radius:50%;background:${swatch};display:block;flex-shrink:0;"></span>
+              <span class="font-display" style="font-size:0.55rem;color:${unlocked ? 'var(--text-secondary)' : 'var(--text-muted)'};text-align:center;line-height:1.2;">${theme.name}</span>
+              ${!unlocked && hint ? `<span class="font-mono" style="font-size:0.5rem;color:var(--text-muted);">${hint}</span>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  return achHTML + themeHTML;
 }
 
 function showToast(msg) {

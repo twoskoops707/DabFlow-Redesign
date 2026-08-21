@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -12,7 +12,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&family=Share+Tech+Mono&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -21,11 +21,23 @@
   <link rel="stylesheet" href="css/design.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/themes.css">
 </head>
 <body>
 
   <!-- Molecule background (added by icons.js) -->
   <div id="molecule-bg" aria-hidden="true"></div>
+
+  <!-- Age gate — shown on first launch -->
+  <div id="age-gate-overlay" class="age-gate-overlay" aria-hidden="true">
+    <div class="age-gate-content">
+      <div style="font-size:2.5rem;margin-bottom:1rem;">🌿</div>
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;color:var(--text-primary);">DabFlow</h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:2rem;">This app contains content for adults who use cannabis concentrates.</p>
+      <button class="btn-primary" style="width:100%;margin-bottom:0.75rem;" onpointerdown="ageGateConfirm()">I am 21 or older</button>
+      <button class="btn-ghost" style="width:100%;" onpointerdown="ageGateDeny()">I am under 21</button>
+    </div>
+  </div>
 
   <!-- App root -->
   <div id="app">
@@ -36,34 +48,53 @@
         justify-content:center;height:100%;padding:var(--sp-6) var(--sp-4);
         position:relative;
       ">
-        <!-- Phase label -->
+        <!-- Phase label — colored per phase via JS -->
         <p id="timer-phase-label" class="font-display" style="
-          font-size:var(--font-sm);color:var(--text-muted);
+          font-size:var(--font-sm);
           text-transform:uppercase;letter-spacing:0.12em;
           margin-bottom:var(--sp-6);height:20px;
         "></p>
 
-        <!-- Ring canvas -->
-        <div id="timer-ring-wrap" style="position:relative;width:80vw;max-width:320px;aspect-ratio:1;">
-          <canvas id="timer-ring" style="width:100%;height:100%;"></canvas>
-          <!-- Center content -->
-          <div style="
-            position:absolute;inset:0;display:flex;flex-direction:column;
-            align-items:center;justify-content:center;
-          ">
+        <!-- SVG arc timer -->
+        <div id="timer-ring-wrap" style="position:relative;width:80vw;max-width:300px;aspect-ratio:1;">
+          <svg viewBox="0 0 100 100" fill="none" style="width:100%;height:100%;display:block;">
+            <!-- Track ring (270°, gap at bottom) -->
+            <circle class="arc-track" cx="50" cy="50" r="44"
+              fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+            <!-- Progress arc — stroke color + dasharray updated by timer.js -->
+            <circle class="arc-progress" cx="50" cy="50" r="44"
+              fill="none" stroke="#EF4444" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="0 276.46" transform="rotate(135 50 50)"/>
+          </svg>
+          <!-- Center display -->
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <span id="timer-display" class="font-mono" style="
-              font-size:var(--font-5xl);color:var(--text-primary);line-height:1;
+              font-size:2rem;color:var(--text-primary);line-height:1;
             ">--:--</span>
-            <span id="timer-sub" class="font-body" style="
-              font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--sp-2);
-            "></span>
           </div>
           <!-- Bloom easter egg container -->
           <div id="timer-bloom" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:50%;"></div>
         </div>
 
+        <!-- Material + Concentrate chips -->
+        <div id="timer-chips" style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;justify-content:center;">
+          <span id="timer-material-chip" style="
+            font-family:'Space Mono',monospace;font-size:0.7rem;
+            padding:0.25rem 0.75rem;border-radius:99px;
+            background:rgba(255,255,255,0.07);color:var(--text-secondary);
+            border:1px solid var(--border);
+          "></span>
+          <span id="timer-concentrate-chip" style="
+            font-family:'Space Mono',monospace;font-size:0.7rem;
+            padding:0.25rem 0.75rem;border-radius:99px;
+            background:rgba(255,255,255,0.07);color:var(--text-secondary);
+            border:1px solid var(--border);
+          "></span>
+        </div>
+
         <!-- Controls -->
-        <div style="margin-top:var(--sp-10);display:flex;gap:var(--sp-4);align-items:center;">
+        <div id="timer-controls" style="margin-top:var(--sp-10);display:flex;gap:var(--sp-4);align-items:center;">
           <button id="timer-reset-btn" onpointerdown="resetTimer()" style="
             width:48px;height:48px;border-radius:50%;border:1px solid var(--border);
             background:var(--bg-surface);color:var(--text-muted);cursor:pointer;
@@ -76,6 +107,13 @@
             Start
           </button>
         </div>
+
+        <!-- Heating source dim label -->
+        <div id="timer-fuel-label" style="
+          margin-top:0.5rem;font-size:0.68rem;
+          color:var(--text-muted);opacity:0.5;letter-spacing:0.05em;
+          font-family:'Space Mono',monospace;min-height:1rem;
+        "></div>
       </div>
     </div>
     <div id="screen-stats" class="screen" role="main">
@@ -98,9 +136,19 @@
     <button class="nav-btn"        data-screen="settings" onpointerdown="switchScreen('settings')" aria-label="Settings"></button>
   </nav>
 
-  <!-- Dab completion animation overlay -->
-  <div id="dab-complete-overlay" class="dab-complete-overlay" aria-hidden="true">
-    <span id="dab-complete-text" class="dab-complete-text"></span>
+  <!-- Vapor Rise completion overlay -->
+  <div id="vapor-rise-overlay" class="vapor-rise-overlay" aria-hidden="true">
+    <div class="vapor-bg">
+      <div class="wisp va"></div>
+      <div class="wisp vb"></div>
+      <div class="wisp vc"></div>
+    </div>
+    <div class="vapor-text">
+      <div class="vapor-complete">SESSION COMPLETE ✓</div>
+      <button class="btn-primary" style="margin-top:1rem;min-width:140px;" onpointerdown="dismissVaporRise()">
+        ADD NOTES
+      </button>
+    </div>
   </div>
 
   <!-- Session notes overlay (dim background) -->
@@ -149,8 +197,10 @@
     </button>
   </div>
 
-  <!-- Scripts (strains before seed-data so seed can reference CONCENTRATE_BRANDS) -->
+  <!-- Scripts -->
   <script src="js/icons.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/age-gate.js"></script>
   <script src="js/strains.js"></script>
   <script src="js/seed-data.js"></script>
   <script src="js/ads.js"></script>

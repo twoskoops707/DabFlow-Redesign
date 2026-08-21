@@ -1,9 +1,9 @@
 'use strict';
 
 const PHASE_COLORS = {
-  heat: '#5B9CF6',
-  hold: '#F5A623',
-  cool: '#2ECC8A',
+  heat: '#EF4444',
+  hold: '#00C46A',
+  cool: null,   // read from --arc-cool at runtime
 };
 
 const DAB_PHRASES = ['enjoy', 'glazed', 'elevated', 'sauced', 'lifted', 'zooted'];
@@ -23,33 +23,68 @@ let _editTs            = null;
 let _notesAutoClose    = null;
 let _countdownInterval = null;
 
-// ── Timer ring ──────────────────────────────────────────────────────────────
+// ── Timer ring (SVG arc) ────────────────────────────────────────────────────
+
+const ARC_CIRC  = 276.46;
+const ARC_TRACK = 207.35;
+
+function _getArcProgress() {
+  return document.querySelector('.arc-progress');
+}
+
+function _getCoolColor() {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue('--arc-cool').trim() || '#5B9CF6';
+}
+
+function _getPhaseColor(phaseName) {
+  if (phaseName === 'heat') return PHASE_COLORS.heat;
+  if (phaseName === 'hold') return PHASE_COLORS.hold;
+  return _getCoolColor();
+}
+
+function drawRingIdle() {
+  const arc = _getArcProgress();
+  if (arc) {
+    arc.setAttribute('stroke-dasharray', `0 ${ARC_CIRC}`);
+    arc.setAttribute('stroke', PHASE_COLORS.heat);
+  }
+}
+
+function drawRingProgress(phaseIdx, progress) {
+  if (!_phases.length) return;
+  const arc = _getArcProgress();
+  if (!arc) return;
+  const phase  = _phases[phaseIdx];
+  const filled = Math.min(1, progress) * ARC_TRACK;
+  const empty  = ARC_CIRC - filled;
+  arc.setAttribute('stroke-dasharray', `${filled.toFixed(2)} ${empty.toFixed(2)}`);
+  arc.setAttribute('stroke', _getPhaseColor(phase.name));
+}
+
+function _refreshTimerChips() {
+  const matEl  = document.getElementById('timer-material-chip');
+  const conEl  = document.getElementById('timer-concentrate-chip');
+  const fuelEl = document.getElementById('timer-fuel-label');
+  if (matEl)  matEl.textContent  = window._selectedMaterial      || '';
+  if (conEl)  conEl.textContent  = window._selectedConcentrate   || '';
+  if (fuelEl) fuelEl.textContent = window._selectedHeatingSource
+    ? `via ${window._selectedHeatingSource}` : '';
+}
 
 function initTimer() {
-  const canvas = document.getElementById('timer-ring');
-  if (!canvas) return;
-
-  // Only resize when dimensions actually changed — assigning canvas.width always
-  // clears the canvas even when the value is identical, which would erase a
-  // running timer's ring for up to 100ms.
-  const newW = (canvas.offsetWidth  * window.devicePixelRatio) || 600;
-  const newH = (canvas.offsetHeight * window.devicePixelRatio) || 600;
-  if (canvas.width !== newW || canvas.height !== newH) {
-    canvas.width  = newW;
-    canvas.height = newH;
-  }
-
   const rb = document.getElementById('timer-reset-btn');
   if (rb && !rb.dataset.iconSet && typeof getIcon === 'function') {
     rb.innerHTML = getIcon('chevron-left', 20);
     rb.dataset.iconSet = '1';
   }
 
-  // Only reset display and ring when idle — don't overwrite a live timer.
   if (_timerState === 'idle') {
     drawRingIdle();
     updateTimerDisplay('--:--');
+    updatePhaseLabel('', '');
   }
+  _refreshTimerChips();
 }
 
 function buildPhases(config) {
@@ -60,86 +95,20 @@ function buildPhases(config) {
   ].filter(p => p.duration > 0);
 }
 
-function _ringSetup(canvas) {
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const cx = W / 2, cy = H / 2;
-  const r  = Math.min(W, H) * 0.42;
-  const lw = W * 0.07;
-  const gap = 0.04;
-  return { ctx, W, H, cx, cy, r, lw, gap };
-}
 
-function drawRingIdle() {
-  const canvas = document.getElementById('timer-ring');
-  if (!canvas) return;
-  const { ctx, W, H, cx, cy, r, lw, gap } = _ringSetup(canvas);
-  const idlePhases = [PHASE_COLORS.heat, PHASE_COLORS.hold, PHASE_COLORS.cool];
-  const n = idlePhases.length;
-  const segSize = (2 * Math.PI - gap * n) / n;
-  const startAngle = -Math.PI / 2;
-  ctx.clearRect(0, 0, W, H);
-  idlePhases.forEach((_, i) => {
-    const s = startAngle + i * (segSize + gap);
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, s, s + segSize);
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = lw;
-    ctx.lineCap  = 'round';
-    ctx.stroke();
-  });
-}
-
-function drawRingProgress(phaseIdx, progress) {
-  const canvas = document.getElementById('timer-ring');
-  if (!canvas || !_phases.length) return;
-  const { ctx, W, H, cx, cy, r, lw, gap } = _ringSetup(canvas);
-  const n = _phases.length;
-  const segSize = (2 * Math.PI - gap * n) / n;
-  const startAngle = -Math.PI / 2;
-  ctx.clearRect(0, 0, W, H);
-  _phases.forEach((phase, i) => {
-    const s = startAngle + i * (segSize + gap);
-    const e = s + segSize;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, s, e);
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = lw;
-    ctx.lineCap  = 'round';
-    ctx.stroke();
-    if (i < phaseIdx) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, s, e);
-      ctx.strokeStyle  = phase.color;
-      ctx.globalAlpha  = 0.5;
-      ctx.lineWidth    = lw;
-      ctx.lineCap      = 'round';
-      ctx.stroke();
-      ctx.globalAlpha  = 1;
-    } else if (i === phaseIdx) {
-      const fillEnd = s + segSize * Math.min(progress, 1);
-      if (fillEnd > s) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, s, fillEnd);
-        ctx.strokeStyle = phase.color;
-        ctx.lineWidth   = lw;
-        ctx.lineCap     = 'round';
-        ctx.stroke();
-      }
-    }
-  });
-}
-
-function updateTimerDisplay(text, sub) {
+function updateTimerDisplay(text) {
   const el = document.getElementById('timer-display');
-  const subEl = document.getElementById('timer-sub');
   if (el) el.textContent = text;
-  if (subEl) subEl.textContent = sub !== undefined ? sub : '';
 }
 
-function updatePhaseLabel(text) {
+function updatePhaseLabel(text, phaseName) {
   const el = document.getElementById('timer-phase-label');
-  if (el) el.textContent = text;
+  if (!el) return;
+  el.textContent = text;
+  if (phaseName === 'heat')      el.style.color = PHASE_COLORS.heat;
+  else if (phaseName === 'hold') el.style.color = PHASE_COLORS.hold;
+  else if (phaseName === 'cool') el.style.color = _getCoolColor();
+  else                           el.style.color = '';
 }
 
 function formatSeconds(s) {
@@ -197,7 +166,7 @@ function startTimer() {
   if (btn)      btn.textContent        = 'Pause';
   if (resetBtn) resetBtn.style.display = 'flex';
 
-  if (_phases.length) updatePhaseLabel(_phases[0].label);
+  if (_phases.length) updatePhaseLabel(_phases[0].label, _phases[0].name);
 
   if ('wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then(s => { _wakeLock = s; }).catch(() => {});
@@ -232,7 +201,7 @@ function timerTick() {
     if (_currentPhaseIdx >= _phases.length) {
       completeSession();
     } else {
-      updatePhaseLabel(_phases[_currentPhaseIdx].label);
+      updatePhaseLabel(_phases[_currentPhaseIdx].label, _phases[_currentPhaseIdx].name);
     }
   }
 }
@@ -271,8 +240,8 @@ function resetTimer() {
   if (btn)      btn.textContent        = 'Start';
   if (resetBtn) resetBtn.style.display = 'none';
 
-  updateTimerDisplay('--:--', '');
-  updatePhaseLabel('');
+  updateTimerDisplay('--:--');
+  updatePhaseLabel('', '');
   drawRingIdle();
   hideSessionNotesPanel();
 }
@@ -288,29 +257,26 @@ function completeSession() {
   if (btn)      btn.textContent        = 'Done';
   if (resetBtn) resetBtn.style.display = 'flex';
 
-  updateTimerDisplay('Done', 'nice one');
-  updatePhaseLabel('Complete');
+  updateTimerDisplay('Done');
+  updatePhaseLabel('Complete', 'cool');
   if (_phases.length) drawRingProgress(_phases.length - 1, 1);
 
   if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
 
-  // Completion phrase animation, then show session notes panel
-  showDabCompleteAnimation();
-  setTimeout(() => showSessionNotesPanel(), 1900);
+  showVaporRise();
 }
 
-// ── Completion animation ─────────────────────────────────────────────────────
+// ── Completion animation (Vapor Rise) ────────────────────────────────────────
 
-function showDabCompleteAnimation() {
-  const phrase  = DAB_PHRASES[Math.floor(Math.random() * DAB_PHRASES.length)];
-  const overlay = document.getElementById('dab-complete-overlay');
-  const text    = document.getElementById('dab-complete-text');
-  if (!overlay || !text) return;
-  text.textContent = phrase;
-  // Force reflow so re-triggering animation works
-  void overlay.offsetWidth;
-  overlay.classList.add('show');
-  setTimeout(() => overlay.classList.remove('show'), 2400);
+function showVaporRise() {
+  const overlay = document.getElementById('vapor-rise-overlay');
+  if (overlay) overlay.classList.add('show');
+}
+
+function dismissVaporRise() {
+  const overlay = document.getElementById('vapor-rise-overlay');
+  if (overlay) overlay.classList.remove('show');
+  showSessionNotesPanel();
 }
 
 // ── Session notes panel ───────────────────────────────────────────────────────
@@ -405,11 +371,13 @@ function saveSessionNotes() {
     const config = window._timerConfig || {};
     window.dispatchEvent(new CustomEvent('session-complete', {
       detail: {
-        ts:       _sessionStart || Date.now(),
-        heat:     config.heat  || 0,
-        hold:     config.hold  || 0,
-        cool:     config.cool  || 0,
-        material: window._selectedMaterial || 'Quartz',
+        ts:            _sessionStart || Date.now(),
+        heat:          config.heat  || 0,
+        hold:          config.hold  || 0,
+        cool:          config.cool  || 0,
+        material:      window._selectedMaterial      || 'Quartz',
+        concentrate:   window._selectedConcentrate   || '',
+        heatingSource: window._selectedHeatingSource || '',
         brand,
         strain,
         rating,
@@ -445,9 +413,9 @@ function triggerBloomEasterEgg() {
   const container = document.getElementById('timer-bloom');
   if (!container) return;
   const cs   = getComputedStyle(document.documentElement);
-  const cool = cs.getPropertyValue('--phase-cool').trim() || '#2ECC8A';
-  const heat = cs.getPropertyValue('--phase-heat').trim() || '#5B9CF6';
-  const hold = cs.getPropertyValue('--phase-hold').trim() || '#F5A623';
+  const cool = cs.getPropertyValue('--arc-cool').trim()   || '#5B9CF6';
+  const heat = cs.getPropertyValue('--arc-heat').trim()   || '#EF4444';
+  const hold = cs.getPropertyValue('--arc-hold').trim()   || '#00C46A';
   container.innerHTML = `
     <div class="bloom-ring">
       <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">

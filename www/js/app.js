@@ -3,11 +3,24 @@
 const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings'];
 let currentScreen = 'home';
 
-const PRESETS = [
-  { id: 'quartz',  label: 'Quartz',  heat: 45, hold: 8,  cool: 30 },
-  { id: 'banger',  label: 'Banger',  heat: 55, hold: 10, cool: 45 },
-  { id: 'custom',  label: 'Custom',  heat: 0,  hold: 0,  cool: 0  },
+const MATERIAL_PRESETS = [
+  { id: 'quartz',         label: 'Quartz',         heat: 45, hold: 8,  cool: 30 },
+  { id: 'banger',         label: 'Banger',         heat: 55, hold: 10, cool: 45 },
+  { id: 'titanium',       label: 'Titanium',       heat: 60, hold: 12, cool: 40 },
+  { id: 'ceramic',        label: 'Ceramic',        heat: 50, hold: 10, cool: 35 },
+  { id: 'quartz-thermal', label: 'Quartz Thermal', heat: 35, hold: 8,  cool: 25 },
 ];
+
+const CONCENTRATES = [
+  'Live Resin','Live Rosin','Shatter','Wax','Distillate',
+  'Budder','Sauce','Diamonds','Hash','Other',
+];
+
+const HEATING_SOURCES = ['Torch','E-Nail','E-Rig','Induction Heater'];
+
+let _homeMaterial      = 'Quartz';
+let _homeConcentrate   = 'Live Resin';
+let _homeHeatingSource = 'Torch';
 
 function staggerCards(container) {
   if (!container) return;
@@ -91,17 +104,29 @@ function formatRelTime(ts) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function startPreset(id) {
-  const preset = PRESETS.find(p => p.id === id);
-  if (!preset) return;
-  window._selectedMaterial = preset.label;
-  if (preset.id === 'custom') {
-    const saved = JSON.parse(localStorage.getItem('dabflow2_settings') || '{}');
-    window._timerConfig = { heat: saved.heat || 45, hold: saved.hold || 8, cool: saved.cool || 30 };
-  } else {
-    window._timerConfig = { heat: preset.heat, hold: preset.hold, cool: preset.cool };
-  }
+function startSession() {
+  const preset = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
+  window._selectedMaterial      = _homeMaterial;
+  window._selectedConcentrate   = _homeConcentrate;
+  window._selectedHeatingSource = _homeHeatingSource;
+  window._timerConfig           = { heat: preset.heat, hold: preset.hold, cool: preset.cool };
   switchScreen('timer');
+  setTimeout(initTimer, 50);
+}
+
+function selectMaterial(label) {
+  _homeMaterial = label;
+  renderHome();
+}
+
+function selectConcentrate(label) {
+  _homeConcentrate = label;
+  renderHome();
+}
+
+function selectHeatingSource(label) {
+  _homeHeatingSource = label;
+  renderHome();
 }
 
 function renderHome() {
@@ -111,10 +136,10 @@ function renderHome() {
   if (!el) return;
 
   const lastSessionHTML = lastSession ? (() => {
-    const meta = [lastSession.brand, lastSession.strain].filter(Boolean).join(' · ');
+    const meta = [lastSession.brand, lastSession.concentrate || lastSession.strain].filter(Boolean).join(' · ');
     return `
-      <p class="section-title">Last Session</p>
-      <div class="card fade-up">
+      <p class="section-title" style="margin-bottom:var(--sp-3);">Last Session</p>
+      <div class="card fade-up" style="margin-bottom:var(--sp-5);">
         <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);">
           <div style="flex:1;min-width:0;">
             <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${lastSession.material || 'Session'}</div>
@@ -135,26 +160,69 @@ function renderHome() {
 
   el.innerHTML = `
     <div class="screen-inner">
-      <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-6);">
+      <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-4);">
         <p class="font-body" style="font-size:var(--font-sm);color:var(--text-muted);">Good ${getTimeOfDay()}</p>
         <h1 class="font-display" style="font-size:var(--font-3xl);font-weight:700;color:var(--text-primary);line-height:1.1;">DabFlow</h1>
         ${streak > 0 ? `<p class="font-mono" style="font-size:var(--font-sm);color:var(--accent);margin-top:var(--sp-2);">Day ${streak}</p>` : ''}
       </div>
-      <p class="section-title">Quick Start</p>
-      <div style="display:grid;gap:var(--sp-3);margin-bottom:var(--sp-6);">
-        ${PRESETS.map(p => `
-          <button class="card fade-up" onpointerdown="startPreset('${p.id}')"
-            style="width:100%;text-align:left;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-5);cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div class="font-display" style="font-size:var(--font-lg);font-weight:600;color:var(--text-primary);">${p.label}</div>
-              ${p.heat > 0
-                ? `<div class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--sp-1);">${p.heat}s heat · ${p.hold}s hold · ${p.cool}s cool</div>`
-                : '<div class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--sp-1);">Your saved settings</div>'}
-            </div>
-            <span style="color:var(--text-muted);">${getIcon('chevron-right', 18)}</span>
+
+      ${lastSessionHTML}
+
+      <!-- Material selector -->
+      <p class="section-title" style="margin-bottom:var(--sp-3);">Material</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
+        ${MATERIAL_PRESETS.map(p => `
+          <button onpointerdown="selectMaterial('${p.label}')"
+            style="
+              padding:var(--sp-3) var(--sp-2);border-radius:var(--r-md);
+              border:1px solid ${_homeMaterial === p.label ? 'var(--accent)' : 'var(--border)'};
+              background:${_homeMaterial === p.label ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
+              color:${_homeMaterial === p.label ? 'var(--accent)' : 'var(--text-secondary)'};
+              font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:600;
+              cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;
+            ">
+            ${p.label}
           </button>`).join('')}
       </div>
-      ${lastSessionHTML}
+
+      <!-- Concentrate selector -->
+      <p class="section-title" style="margin-bottom:var(--sp-3);">Concentrate</p>
+      <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-5);">
+        ${CONCENTRATES.map(c => `
+          <button onpointerdown="selectConcentrate('${c}')"
+            style="
+              padding:var(--sp-2) var(--sp-3);border-radius:99px;
+              border:1px solid ${_homeConcentrate === c ? 'var(--accent)' : 'var(--border)'};
+              background:${_homeConcentrate === c ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
+              color:${_homeConcentrate === c ? 'var(--accent)' : 'var(--text-secondary)'};
+              font-family:'Space Mono',monospace;font-size:0.65rem;
+              cursor:pointer;-webkit-tap-highlight-color:transparent;
+            ">
+            ${c}
+          </button>`).join('')}
+      </div>
+
+      <!-- Heating Source selector -->
+      <p class="section-title" style="margin-bottom:var(--sp-3);">Heating Source</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-2);margin-bottom:var(--sp-6);">
+        ${HEATING_SOURCES.map(h => `
+          <button onpointerdown="selectHeatingSource('${h}')"
+            style="
+              padding:var(--sp-3);border-radius:var(--r-md);
+              border:1px solid ${_homeHeatingSource === h ? 'var(--accent)' : 'var(--border)'};
+              background:${_homeHeatingSource === h ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
+              color:${_homeHeatingSource === h ? 'var(--accent)' : 'var(--text-secondary)'};
+              font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600;
+              cursor:pointer;-webkit-tap-highlight-color:transparent;
+            ">
+            ${h}
+          </button>`).join('')}
+      </div>
+
+      <!-- Start button -->
+      <button class="btn-primary fade-up" style="width:100%;font-size:1rem;padding:var(--sp-4);" onpointerdown="startSession()">
+        START SESSION
+      </button>
     </div>`;
 
   staggerCards(el);
@@ -293,6 +361,43 @@ function toggleRow(key, label, value) {
   </div>`;
 }
 
+function themePickerHTML() {
+  if (typeof THEMES === 'undefined') return '';
+  const active = document.documentElement.getAttribute('data-theme') || 'default';
+  return `
+    <p class="section-title">Themes</p>
+    <div class="card" style="margin-bottom:var(--sp-4);">
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);">
+          ${THEMES.map(theme => {
+            const unlocked = isThemeUnlocked(theme);
+            const isActive = theme.id === active;
+            const swatch   = theme.arcCool
+              ? theme.arcCool
+              : 'conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)';
+            return `<button
+              onpointerdown="${unlocked ? `setActiveTheme('${theme.id}');renderSettings()` : ''}"
+              style="
+                padding:var(--sp-3) var(--sp-2);border-radius:var(--r-md);
+                border:2px solid ${isActive ? 'var(--accent)' : 'var(--border)'};
+                background:var(--bg-elevated);cursor:${unlocked ? 'pointer' : 'default'};
+                opacity:${unlocked ? 1 : 0.4};
+                display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);
+                position:relative;-webkit-tap-highlight-color:transparent;
+              ">
+              <span style="
+                width:18px;height:18px;border-radius:50%;
+                background:${swatch};display:block;flex-shrink:0;
+              "></span>
+              <span class="font-display" style="font-size:0.55rem;color:var(--text-secondary);text-align:center;line-height:1.2;">${theme.name}</span>
+              ${!unlocked ? `<span style="position:absolute;top:3px;right:3px;font-size:0.55rem;color:var(--text-muted);">🔒</span>` : ''}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderSettings() {
   const s = getSettings();
   const el = document.getElementById('screen-settings');
@@ -301,6 +406,8 @@ function renderSettings() {
     <div class="screen-inner">
       <div style="padding-top:var(--sp-6);">
         <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-6);">Settings</h1>
+
+        ${themePickerHTML()}
 
         <p class="section-title">Timer</p>
         <div class="card" style="margin-bottom:var(--sp-4);">
@@ -353,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('session-complete', (e) => {
   saveSession(e.detail);
+  if (typeof checkThemeUnlocks === 'function') checkThemeUnlocks();
   renderHome();
 });
 

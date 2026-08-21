@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DabFlow Theme Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Share+Tech+Mono&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#0a0a0f; color:#f0f4f8; font-family:'Space Grotesk',sans-serif; min-height:100vh; padding:24px 16px 60px; }
+h1  { text-align:center; font-size:1.4rem; font-weight:700; margin-bottom:6px; letter-spacing:.05em; }
+.sub{ text-align:center; color:#4a5568; font-size:.8rem; margin-bottom:32px; letter-spacing:.08em; text-transform:uppercase; }
+.section-head { text-align:center; font-size:1rem; font-weight:700; color:#8A9BAE; margin:48px 0 8px; letter-spacing:.1em; text-transform:uppercase; }
+
+.grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:28px; max-width:1100px; margin:0 auto; }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; max-width:680px; margin:0 auto; }
+
+.theme-card { display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer; border:2px solid transparent; border-radius:16px; padding:12px; transition:border-color .2s,transform .15s; }
+.theme-card:hover { transform:translateY(-2px); }
+.theme-card.selected { border-color:#2ECC8A; }
+.theme-card.selected .phone { box-shadow:0 0 0 3px #2ECC8A, 0 8px 32px rgba(0,0,0,.6); }
+
+.phone { width:180px; height:340px; border-radius:28px; border:3px solid rgba(255,255,255,.12); overflow:hidden; position:relative; flex-shrink:0; box-shadow:0 8px 32px rgba(0,0,0,.6); }
+.phone-inner { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 10px 12px; position:relative; overflow:hidden; }
+
+.theme-name  { font-weight:700; font-size:1rem; letter-spacing:.06em; text-align:center; }
+.theme-unlock{ font-size:.68rem; color:#4a5568; text-transform:uppercase; letter-spacing:.1em; text-align:center; }
+
+/* ─────────────────────────────────────────────
+   ARC TIMER
+   ViewBox 100×100, cx=50 cy=50 r=44 sw=5
+   Circ=276.46  270°=207.35  gap=69.11
+   60% heat=124.41  rest=152.05
+   rotate(135 50 50) → gap at bottom
+───────────────────────────────────────────── */
+.arc-wrap { position:relative; width:152px; height:152px; flex-shrink:0; }
+.arc-svg  { width:100%; height:100%; display:block; }
+.arc-content { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+.arc-track { stroke:rgba(255,255,255,.07); }
+.arc-heat  { stroke:#EF4444; }
+.arc-cool  { stroke:#5B9CF6; }
+
+.t-phase  { font-size:.4rem; letter-spacing:.22em; text-transform:uppercase; opacity:.8; margin-bottom:3px; }
+.t-number { font-size:2rem; font-weight:700; line-height:1; }
+
+.t-sels { display:flex; gap:4px; justify-content:center; margin-top:7px; flex-wrap:wrap; }
+.t-sel  { font-size:.36rem; padding:2px 6px; border-radius:4px; border:1px solid rgba(255,255,255,.12); color:rgba(255,255,255,.4); font-family:'Space Grotesk',sans-serif; letter-spacing:.04em; }
+.t-fuel { font-size:.32rem; color:rgba(255,255,255,.17); margin-top:4px; letter-spacing:.06em; }
+.t-btn  { margin-top:8px; padding:5px 18px; border-radius:99px; border:none; font-size:.6rem; font-weight:700; letter-spacing:.08em; cursor:default; }
+
+/* per-theme arc colors */
+.kush      .arc-cool { stroke:#4ADE80; }
+.terminal  .arc-heat { stroke:#FF3B3B; }
+.terminal  .arc-cool { stroke:#00FF41; }
+.bond      .arc-heat { stroke:#CC2222; }
+.bond      .arc-cool { stroke:#A0A0C8; }
+.cyberpunk .arc-heat { stroke:#FF0090; }
+.cyberpunk .arc-cool { stroke:#00FFFF; }
+.steampunk .arc-heat { stroke:#B22222; }
+.steampunk .arc-cool { stroke:#E8B84B; }
+.sugar     .arc-heat { stroke:#FF1744; }
+.sugar     .arc-cool { stroke:#00BCD4; }
+
+/* ── 1. DEFAULT ── */
+.default .phone-inner { background:#080A0C; }
+.default .t-phase  { color:#EF4444; }
+.default .t-number { color:#F0F4F8; font-family:'Space Mono',monospace; }
+.default .t-btn    { background:#2ECC8A; color:#080A0C; }
+.default .t-sel    { border-color:rgba(255,255,255,.1); color:#8A9BAE; }
+
+/* ── 2. KUSH ── */
+.kush .phone-inner { background:radial-gradient(ellipse at top,#071409,#030805); }
+.kush .t-phase  { color:#EF4444; }
+.kush .t-number { color:#4ADE80; font-family:'Space Mono',monospace; text-shadow:0 0 20px rgba(74,222,128,.5); }
+.kush .t-btn    { background:#4ADE80; color:#030805; }
+.kush .t-sel    { border-color:rgba(74,222,128,.2); color:rgba(74,222,128,.6); }
+.kush .leaf-bg  { position:absolute; font-size:3.5rem; opacity:.04; top:10px; right:-8px; pointer-events:none; filter:blur(1px); }
+
+/* ── 3. TERMINAL — arc-wrap gets z-index:2 to sit above scanline overlay ── */
+.terminal .phone-inner { background:#000; font-family:'Share Tech Mono',monospace; }
+.terminal .phone-inner::before {
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,255,65,.03) 0,rgba(0,255,65,.03) 1px,transparent 1px,transparent 3px);
+}
+/* FIX: lift entire arc-wrap above scanline */
+.terminal .arc-wrap  { z-index:2; }
+.terminal .t-sels    { position:relative; z-index:2; }
+.terminal .t-btn     { position:relative; z-index:2; }
+.terminal .t-fuel    { position:relative; z-index:2; }
+
+.terminal .t-phase  { color:#FF3B3B; font-family:'Share Tech Mono',monospace; font-size:.38rem; letter-spacing:.25em; }
+.terminal .t-number { color:#00FF41; font-family:'Share Tech Mono',monospace; font-size:1.9rem; text-shadow:0 0 10px rgba(0,255,65,.8),0 0 30px rgba(0,255,65,.3); }
+.terminal .t-btn    { background:transparent; color:#00FF41; border:1px solid #00FF41; font-family:'Share Tech Mono',monospace; letter-spacing:.1em; box-shadow:0 0 8px rgba(0,255,65,.3); }
+.terminal .t-sel    { border-color:rgba(0,255,65,.3); color:rgba(0,255,65,.6); font-family:'Share Tech Mono',monospace; }
+.terminal .cursor   { display:inline-block; width:2px; height:1.7rem; background:#00FF41; animation:blink 1s step-end infinite; vertical-align:middle; margin-left:2px; box-shadow:0 0 6px #00FF41; }
+@keyframes blink { 50%{opacity:0} }
+
+/* ── 4. BOND ── */
+.bond .phone-inner { background:#080810; }
+.bond .reticle { position:absolute; width:100px; height:100px; border-radius:50%; border:1px solid rgba(192,192,210,.07); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+.bond .t-phase  { color:#CC2222; font-family:'Cinzel',serif; font-size:.36rem; letter-spacing:.3em; }
+.bond .t-number { color:#E8E8F0; font-family:'Cinzel',serif; font-size:1.9rem; letter-spacing:-.02em; }
+.bond .t-btn    { background:transparent; color:#C0C0D0; border:1px solid rgba(192,192,210,.4); font-family:'Cinzel',serif; font-size:.45rem; letter-spacing:.2em; }
+.bond .t-sel    { border-color:rgba(192,192,210,.15); color:#606080; font-family:'Cinzel',serif; }
+
+/* ── 5. CYBERPUNK ── */
+.cyberpunk .phone-inner { background:#000; }
+.cyberpunk .glitch-line { position:absolute; width:100%; height:1px; background:linear-gradient(90deg,transparent,#FF0090,#00FFFF,transparent); animation:glitch-move 3s infinite; opacity:.6; pointer-events:none; }
+@keyframes glitch-move { 0%{top:20%}25%{top:60%}50%{top:35%}75%{top:80%}100%{top:20%} }
+.cyberpunk .t-phase  { color:#FF0090; font-family:'Share Tech Mono',monospace; font-size:.4rem; letter-spacing:.3em; }
+.cyberpunk .t-number { color:#00FFFF; font-family:'Share Tech Mono',monospace; font-size:2rem; animation:chromatic 4s infinite; }
+@keyframes chromatic {
+  0%,90%,100%{ text-shadow:2px 0 rgba(255,0,144,.5),-2px 0 rgba(0,255,255,.3); }
+  92%{ text-shadow:4px 0 rgba(255,0,144,.9),-4px 0 rgba(0,255,255,.8); }
+  94%{ text-shadow:0 0 rgba(255,0,144,.1),0 0 rgba(0,255,255,.1); }
+  96%{ text-shadow:4px 0 rgba(255,0,144,.9),-4px 0 rgba(0,255,255,.8); }
+}
+.cyberpunk .t-btn { background:transparent; color:#00FFFF; border:1px solid #00FFFF; font-family:'Share Tech Mono',monospace; box-shadow:0 0 10px rgba(0,255,255,.3); clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); letter-spacing:.1em; }
+.cyberpunk .t-sel { border-top:1px solid rgba(255,0,144,.4); border-bottom:1px solid rgba(0,255,255,.4); border-left:none; border-right:none; border-radius:0; color:#FF0090; font-family:'Share Tech Mono',monospace; }
+
+/* ── 6. STEAMPUNK ── */
+.steampunk .phone-inner { background:radial-gradient(ellipse at top,#1A0E06,#0D0805); }
+.steampunk .gear { position:absolute; font-size:4rem; opacity:.06; pointer-events:none; animation:rotate-gear 20s linear infinite; color:#CD7F32; }
+.steampunk .gear-2 { font-size:2.5rem; top:20px; right:10px; animation-direction:reverse; animation-duration:15s; }
+@keyframes rotate-gear { to{transform:rotate(360deg)} }
+.steampunk .t-phase  { color:#B22222; font-size:.4rem; letter-spacing:.2em; }
+.steampunk .t-number { color:#E8B84B; font-family:'Space Mono',monospace; font-size:1.9rem; text-shadow:0 0 15px rgba(232,184,75,.4); }
+.steampunk .t-btn    { background:linear-gradient(135deg,#3D2B1F,#4A3525); color:#E8B84B; border:1px solid #CD7F32; box-shadow:0 2px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(232,184,75,.2); }
+.steampunk .t-sel    { border-color:rgba(205,127,50,.3); color:#8B6340; }
+
+/* ── 7. TIE DYE (formerly Dead & Phish) — skull stays ── */
+.tiedye .phone-inner { background:#0A0010; animation:rainbow-shift 8s linear infinite; }
+@keyframes rainbow-shift {
+  0%{background:#0A0010}14%{background:#0A000A}28%{background:#00080A}
+  42%{background:#000A00}57%{background:#0A0800}71%{background:#0A0004}
+  85%{background:#060010}100%{background:#0A0010}
+}
+.tiedye .skull { position:absolute; font-size:2.5rem; top:10px; left:50%; transform:translateX(-50%); opacity:.1; pointer-events:none; animation:skull-pulse 3s ease-in-out infinite; }
+@keyframes skull-pulse { 0%,100%{opacity:.06}50%{opacity:.15} }
+.tiedye .t-phase  { color:transparent; background:linear-gradient(90deg,#f0f,#ff0,#0ff,#0f0,#f80,#f0f); background-size:200% 100%; animation:rainbow-text 4s linear infinite; -webkit-background-clip:text; background-clip:text; font-size:.4rem; letter-spacing:.18em; -webkit-text-fill-color:transparent; }
+@keyframes rainbow-text { to{background-position:-200% 0} }
+.tiedye .t-number { color:transparent; background:linear-gradient(90deg,#ff69b4,#ffd700,#00ffff,#ff69b4); background-size:300% 100%; animation:rainbow-text 3s linear infinite; -webkit-background-clip:text; background-clip:text; font-family:'Space Mono',monospace; font-size:2rem; -webkit-text-fill-color:transparent; }
+.tiedye .t-btn    { background:linear-gradient(135deg,#1a0030,#300020); color:#ffd700; border:1px solid rgba(255,215,0,.4); text-shadow:0 0 8px rgba(255,215,0,.6); }
+.tiedye .t-sel    { border-color:rgba(255,105,180,.2); color:rgba(255,215,0,.6); }
+.tiedye .arc-heat { stroke:#FF1744; }
+.tiedye .arc-cool {
+  /* rainbow gradient on arc — use a conic or linearGradient in SVG */
+  stroke:#ff69b4;
+}
+
+/* ── 8. SUGAR SKULL — Day of the Dead ── */
+.sugar .phone-inner {
+  background:radial-gradient(ellipse at 50% 25%, #1C0022 0%, #06000A 65%);
+}
+/* subtle cross-hatch pattern backdrop */
+.sugar .phone-inner::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    repeating-linear-gradient(45deg,  rgba(233,30,140,.03) 0,rgba(233,30,140,.03) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(-45deg, rgba(0,188,212,.02)  0,rgba(0,188,212,.02)  1px, transparent 1px, transparent 8px);
+}
+/* sugar skull background icon */
+.sugar .big-skull {
+  position:absolute; font-size:3.2rem; top:10px; left:50%; transform:translateX(-50%);
+  opacity:.1; pointer-events:none; z-index:0;
+  animation:skull-breathe 4s ease-in-out infinite;
+}
+@keyframes skull-breathe {
+  0%,100%{ opacity:.07; transform:translateX(-50%) scale(1); }
+  50%    { opacity:.15; transform:translateX(-50%) scale(1.04); }
+}
+/* corner flower decorations */
+.sugar .fl { position:absolute; font-size:1.1rem; opacity:.18; pointer-events:none; z-index:0; animation:fl-spin 10s linear infinite; }
+.sugar .fl-tl { top:6px;  left:6px;  animation-delay:0s; }
+.sugar .fl-tr { top:6px;  right:6px; animation-direction:reverse; animation-delay:-2.5s; }
+.sugar .fl-bl { bottom:36px; left:6px;  animation-delay:-5s; }
+.sugar .fl-br { bottom:36px; right:6px; animation-direction:reverse; animation-delay:-7.5s; }
+@keyframes fl-spin { to{transform:rotate(360deg)} }
+
+.sugar .arc-wrap  { z-index:1; }
+.sugar .t-sels    { position:relative; z-index:1; }
+.sugar .t-btn     { position:relative; z-index:1; }
+.sugar .t-fuel    { position:relative; z-index:1; }
+
+.sugar .t-phase  { color:#E91E8C; font-size:.4rem; letter-spacing:.25em; }
+.sugar .t-number {
+  color:#FFD700; font-family:'Space Mono',monospace; font-size:2rem;
+  text-shadow:0 0 18px rgba(255,215,0,.6), 0 0 40px rgba(233,30,140,.35);
+}
+.sugar .t-btn {
+  background:linear-gradient(135deg,#1A0020,#220015);
+  color:#E91E8C; border:1px solid rgba(233,30,140,.5);
+  box-shadow:0 0 12px rgba(233,30,140,.25), inset 0 1px 0 rgba(255,215,0,.1);
+}
+.sugar .t-sel  { border-color:rgba(255,215,0,.28); color:rgba(255,215,0,.55); }
+.sugar .t-fuel { color:rgba(0,188,212,.2); }
+/* give the phone itself a magenta glow */
+.sugar .phone  { box-shadow:0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(233,30,140,.25), 0 0 24px rgba(233,30,140,.12); }
+
+/* ════════════════════════════════════════
+   COMPLETION ANIMATION SCREENS
+════════════════════════════════════════ */
+.c-inner { width:100%; height:100%; background:#080A0C; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.c-title { font-size:.48rem; letter-spacing:.25em; text-transform:uppercase; color:#2ECC8A; margin-bottom:8px; position:relative; z-index:10; }
+.c-icon  { font-size:1.6rem; line-height:1; position:relative; z-index:10; color:#2ECC8A; text-shadow:0 0 20px rgba(46,204,138,.5); }
+.c-meta  { font-size:.4rem; color:#4a5568; margin-top:10px; letter-spacing:.1em; position:relative; z-index:10; text-align:center; }
+.c-cta   { margin-top:12px; padding:4px 14px; background:#2ECC8A; color:#080A0C; border-radius:99px; font-size:.45rem; font-weight:700; letter-spacing:.06em; position:relative; z-index:10; }
+.anim-label { font-weight:700; font-size:.9rem; text-align:center; letter-spacing:.04em; }
+.anim-desc  { font-size:.7rem; color:#4a5568; text-align:center; max-width:160px; line-height:1.4; }
+
+/* A: Vapor Rise */
+@keyframes wisp-a { 0%{opacity:0;transform:translateY(0) scaleX(1)}12%{opacity:.55}70%{opacity:.3;transform:translateY(-90px) scaleX(1.4)}100%{opacity:0;transform:translateY(-130px) scaleX(1.6)} }
+@keyframes wisp-b { 0%{opacity:0;transform:translateY(0) scaleX(1) rotate(-5deg)}15%{opacity:.45}70%{opacity:.25;transform:translateY(-80px) scaleX(1.5) rotate(8deg)}100%{opacity:0;transform:translateY(-120px) scaleX(1.7) rotate(12deg)} }
+.vapor-bg { position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); pointer-events:none; z-index:1; }
+.wisp { position:absolute; bottom:0; border-radius:50%; background:radial-gradient(ellipse at 50% 80%,rgba(255,255,255,.22),transparent 70%); filter:blur(6px); }
+.wa { width:60px; height:80px;  left:-30px; animation:wisp-a 3s ease-out infinite; }
+.wb { width:80px; height:100px; left:-15px; animation:wisp-b 3.5s ease-out .8s infinite; }
+.wc { width:50px; height:70px;  left:10px;  animation:wisp-a 2.8s ease-out 1.6s infinite; }
+
+/* B: Banger Smoke */
+.rig-wrap { position:relative; z-index:5; margin-bottom:4px; }
+@keyframes rig-wisp-rise { 0%{opacity:0;transform:translateY(4px)}20%{opacity:.75}80%{opacity:.4;transform:translateY(-8px)}100%{opacity:0;transform:translateY(-14px)} }
+.rig-wisp-1 { animation:rig-wisp-rise 2.2s ease-out infinite; }
+.rig-wisp-2 { animation:rig-wisp-rise 2.2s ease-out .6s infinite; }
+.rig-wisp-3 { animation:rig-wisp-rise 2.2s ease-out 1.2s infinite; }
+@keyframes nail-pulse { 0%,100%{filter:drop-shadow(0 0 4px rgba(46,204,138,.5))}50%{filter:drop-shadow(0 0 10px rgba(46,204,138,.9))} }
+.nail-glow { animation:nail-pulse 2s ease-in-out infinite; }
+
+/* C: Ring Fill */
+@keyframes ring-fill { 0%{stroke-dasharray:0 276;opacity:.3}60%{stroke-dasharray:276 0;opacity:1}80%{stroke-dasharray:276 0;opacity:.8}100%{stroke-dasharray:276 0;opacity:.6} }
+@keyframes check-appear { 0%,50%{opacity:0;transform:scale(.5)}70%{opacity:1;transform:scale(1.15)}100%{opacity:1;transform:scale(1)} }
+.fill-ring { animation:ring-fill 2.5s ease-out infinite; }
+.check-appear { animation:check-appear 2.5s ease-out infinite; transform-box:fill-box; transform-origin:center; }
+</style>
+</head>
+<body>
+
+<h1>DabFlow Themes</h1>
+<p class="sub">Red arc = heat · Theme color = cool · Numbers inside the ring · Tap to pick</p>
+
+<div class="grid">
+
+  <!-- 1. DEFAULT -->
+  <div class="theme-card default" onclick="toggleSelect(this)" data-choice="default">
+    <div class="phone"><div class="phone-inner">
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">Quartz</span><span class="t-sel">Live Resin</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel">via Torch</div>
+    </div></div>
+    <div class="theme-name" style="color:#2ECC8A">Default</div>
+    <div class="theme-unlock">Always unlocked · 10 accent colors</div>
+  </div>
+
+  <!-- 2. KUSH -->
+  <div class="theme-card kush" onclick="toggleSelect(this)" data-choice="kush">
+    <div class="phone"><div class="phone-inner">
+      <div class="leaf-bg">🌿</div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">🌱 Quartz</span><span class="t-sel">Live Rosin</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel">via Torch</div>
+    </div></div>
+    <div class="theme-name" style="color:#4ADE80">Kush</div>
+    <div class="theme-unlock">Unlock: First Dab</div>
+  </div>
+
+  <!-- 3. TERMINAL — arc-wrap lifted above scanline via z-index -->
+  <div class="theme-card terminal" onclick="toggleSelect(this)" data-choice="terminal">
+    <div class="phone"><div class="phone-inner">
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">&gt; HEAT_PHASE</div>
+          <div class="t-number">00:38<span class="cursor"></span></div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">&gt; quartz</span><span class="t-sel">raw_garden</span></div>
+      <div class="t-btn">[ PAUSE ]</div>
+      <div class="t-fuel" style="color:rgba(0,255,65,.18);">&gt; fuel: torch</div>
+    </div></div>
+    <div class="theme-name" style="color:#00FF41">Terminal</div>
+    <div class="theme-unlock">Unlock: 10 Sessions</div>
+  </div>
+
+  <!-- 4. BOND -->
+  <div class="theme-card bond" onclick="toggleSelect(this)" data-choice="bond">
+    <div class="phone"><div class="phone-inner">
+      <div class="reticle"></div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">QUARTZ</span><span class="t-sel">CLASSIFIED</span></div>
+      <div class="t-btn">HOLD</div>
+      <div class="t-fuel">VIA TORCH</div>
+    </div></div>
+    <div class="theme-name" style="color:#C0C8D8">Bond</div>
+    <div class="theme-unlock">Unlock: 7-Day Streak</div>
+  </div>
+
+  <!-- 5. CYBERPUNK -->
+  <div class="theme-card cyberpunk" onclick="toggleSelect(this)" data-choice="cyberpunk">
+    <div class="phone"><div class="phone-inner">
+      <div class="glitch-line"></div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT.EXE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">QRTZ</span><span class="t-sel">LV_RESIN</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel" style="color:rgba(0,255,255,.15);">FUEL://TORCH</div>
+    </div></div>
+    <div class="theme-name" style="color:#FF0090">Cyberpunk</div>
+    <div class="theme-unlock">Unlock: 30 Sessions</div>
+  </div>
+
+  <!-- 6. STEAMPUNK -->
+  <div class="theme-card steampunk" onclick="toggleSelect(this)" data-choice="steampunk">
+    <div class="phone"><div class="phone-inner">
+      <div class="gear" style="bottom:-10px;left:-15px;">⚙</div>
+      <div class="gear gear-2">⚙</div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <circle class="arc-heat"  cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">⚙ Quartz</span><span class="t-sel">Live Resin</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel">via ⚗ Torch</div>
+    </div></div>
+    <div class="theme-name" style="color:#E8B84B">Steampunk</div>
+    <div class="theme-unlock">Unlock: 50 Sessions</div>
+  </div>
+
+  <!-- 7. TIE DYE — skull stays, rainbow colors -->
+  <div class="theme-card tiedye" onclick="toggleSelect(this)" data-choice="tiedye">
+    <div class="phone"><div class="phone-inner">
+      <div class="skull">💀</div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <defs>
+            <linearGradient id="td-g" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#ff69b4"/>
+              <stop offset="33%"  stop-color="#ffd700"/>
+              <stop offset="66%"  stop-color="#00ffff"/>
+              <stop offset="100%" stop-color="#ff69b4"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="url(#td-g)" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">⚡ Quartz</span><span class="t-sel">Live Resin</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel" style="color:rgba(255,215,0,.2);">via E-Nail</div>
+    </div></div>
+    <div class="theme-name" style="background:linear-gradient(90deg,#f0f,#ff0,#0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Tie Dye</div>
+    <div class="theme-unlock">Unlock: 75 Sessions</div>
+  </div>
+
+  <!-- 8. SUGAR SKULL — Day of the Dead -->
+  <div class="theme-card sugar" onclick="toggleSelect(this)" data-choice="sugar">
+    <div class="phone"><div class="phone-inner">
+      <div class="big-skull">💀</div>
+      <div class="fl fl-tl">🌺</div>
+      <div class="fl fl-tr">🌸</div>
+      <div class="fl fl-bl">🌼</div>
+      <div class="fl fl-br">🌺</div>
+      <div class="arc-wrap">
+        <svg class="arc-svg" viewBox="0 0 100 100">
+          <circle class="arc-track" cx="50" cy="50" r="44" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="207.35 69.11" transform="rotate(135 50 50)"/>
+          <defs>
+            <linearGradient id="sg-heat" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#FF1744"/>
+              <stop offset="100%" stop-color="#E91E8C"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="url(#sg-heat)" stroke-width="5" stroke-linecap="round" stroke-dasharray="124.41 152.05" transform="rotate(135 50 50)"/>
+        </svg>
+        <div class="arc-content">
+          <div class="t-phase">HEAT PHASE</div>
+          <div class="t-number">00:38</div>
+        </div>
+      </div>
+      <div class="t-sels"><span class="t-sel">Quartz</span><span class="t-sel">Live Resin</span></div>
+      <div class="t-btn">PAUSE</div>
+      <div class="t-fuel">via Torch</div>
+    </div></div>
+    <div class="theme-name" style="background:linear-gradient(90deg,#E91E8C,#FFD700,#00BCD4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Sugar Skull</div>
+    <div class="theme-unlock">Unlock: 100 Sessions</div>
+  </div>
+
+</div>
+
+<!-- COMPLETION ANIMATIONS -->
+<p class="section-head">Completion Animations · Pick One</p>
+<p class="sub" style="margin-bottom:24px;">Plays when cool-down ends · adapts to your theme's colors</p>
+
+<div class="grid-3">
+
+  <!-- A: Vapor Rise -->
+  <div class="theme-card" onclick="toggleSelect(this)" data-choice="anim-vapor">
+    <div class="phone"><div class="c-inner">
+      <div class="vapor-bg">
+        <div class="wisp wa"></div>
+        <div class="wisp wb"></div>
+        <div class="wisp wc"></div>
+      </div>
+      <div class="c-title">SESSION COMPLETE</div>
+      <div class="c-icon">✓</div>
+      <div class="c-meta">Quartz · Live Resin<br>via Torch</div>
+      <div class="c-cta">ADD NOTES</div>
+    </div></div>
+    <div class="anim-label" style="color:#8A9BAE">A · Vapor Rise</div>
+    <div class="anim-desc">Large slow smoke clouds billow up — atmospheric dab vibe</div>
+  </div>
+
+  <!-- B: Banger Smoke -->
+  <div class="theme-card" onclick="toggleSelect(this)" data-choice="anim-banger">
+    <div class="phone"><div class="c-inner">
+      <div class="c-title">SESSION COMPLETE</div>
+      <div class="rig-wrap">
+        <svg viewBox="0 0 100 95" width="100" height="95">
+          <defs><filter id="gf"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <path class="rig-wisp-1" d="M48 20 Q43 10 48 2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.8" stroke-linecap="round"/>
+          <path class="rig-wisp-2" d="M50 20 Q50 10 50 2"  fill="none" stroke="rgba(255,255,255,.7)"  stroke-width="2"   stroke-linecap="round"/>
+          <path class="rig-wisp-3" d="M52 20 Q57 10 52 2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.8" stroke-linecap="round"/>
+          <circle class="nail-glow" cx="50" cy="26" r="9"   fill="rgba(46,204,138,.65)" filter="url(#gf)"/>
+          <circle                   cx="50" cy="26" r="5.5" fill="rgba(255,255,255,.25)"/>
+          <circle cx="50" cy="26" r="14" fill="none" stroke="rgba(46,204,138,.35)" stroke-width="1.2"/>
+          <circle cx="50" cy="26" r="18" fill="none" stroke="rgba(46,204,138,.18)" stroke-width=".8"/>
+          <rect x="46.5" y="35" width="7" height="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.5" rx="1"/>
+          <ellipse cx="50" cy="62" rx="18" ry="8" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+          <rect    x="32"  y="54" width="36" height="8" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+          <ellipse cx="50" cy="54" rx="18" ry="8" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+          <path d="M35 70 L31 82 L69 82 L65 70 Z" fill="rgba(46,204,138,.3)" stroke="rgba(46,204,138,.5)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="c-meta">Quartz · Live Resin<br>via Torch</div>
+      <div class="c-cta">ADD NOTES</div>
+    </div></div>
+    <div class="anim-label" style="color:#2ECC8A">B · Banger Smoke</div>
+    <div class="anim-desc">Dab rig with vapor wisps rising from the nail — iconic dab flow</div>
+  </div>
+
+  <!-- C: Ring Fill -->
+  <div class="theme-card" onclick="toggleSelect(this)" data-choice="anim-ring">
+    <div class="phone"><div class="c-inner">
+      <svg viewBox="0 0 100 100" width="120" height="120" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-56%);z-index:2;">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="#2ECC8A" stroke-width="5" stroke-linecap="round" class="fill-ring" stroke-dasharray="0 276"/>
+        <text class="check-appear" x="50" y="57" text-anchor="middle" font-size="28" fill="#2ECC8A" font-family="'Space Grotesk',sans-serif" font-weight="700">✓</text>
+      </svg>
+      <div class="c-title" style="margin-top:80px;">SESSION COMPLETE</div>
+      <div class="c-meta">Quartz · Live Resin<br>via Torch</div>
+      <div class="c-cta">ADD NOTES</div>
+    </div></div>
+    <div class="anim-label" style="color:#5B9CF6">C · Ring Fill</div>
+    <div class="anim-desc">Arc sweeps to a full glowing ring — clean &amp; satisfying</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:32px;font-size:.72rem;color:#4a5568;">
+  All animations adapt to your theme's accent color · Early visual direction mockups
+</p>
+
+<script>
+function toggleSelect(el) {
+  el.classList.toggle('selected');
+  if (window.__brainstorm_select) window.__brainstorm_select(el.dataset.choice, el.classList.contains('selected') ? 'selected' : 'deselected');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+/* ── DabFlow Theme Overrides ──────────────────────────────────────────────── */
+/* Applied via data-theme attribute on <html>. Base tokens live in design.css. */
+
+/* ── Default (always unlocked) — no overrides needed, uses base tokens ── */
+
+/* ── Kush (1st session) ── */
+[data-theme="kush"] {
+  --bg-base:      #061209;
+  --bg-surface:   #0C1F12;
+  --bg-elevated:  #132819;
+  --accent:       #4ADE80;
+  --arc-cool:     #4ADE80;
+  --text-primary: #E8F5E9;
+  --border:       rgba(74,222,128,0.12);
+}
+
+/* ── Terminal (10 sessions) ── */
+[data-theme="terminal"] {
+  --bg-base:       #000800;
+  --bg-surface:    #001200;
+  --bg-elevated:   #001A00;
+  --accent:        #00FF41;
+  --arc-cool:      #00FF41;
+  --text-primary:  #00FF41;
+  --text-secondary:rgba(0,255,65,0.7);
+  --text-muted:    rgba(0,255,65,0.4);
+  --border:        rgba(0,255,65,0.15);
+}
+
+/* Terminal scanline overlay */
+[data-theme="terminal"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Lift arc + controls above scanline overlay */
+[data-theme="terminal"] #timer-ring-wrap,
+[data-theme="terminal"] #timer-chips,
+[data-theme="terminal"] #timer-fuel-label,
+[data-theme="terminal"] #timer-controls,
+[data-theme="terminal"] #timer-phase-label {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Bond (7-day streak) ── */
+[data-theme="bond"] {
+  --bg-base:      #0B0B14;
+  --bg-surface:   #111120;
+  --bg-elevated:  #1A1A2E;
+  --accent:       #A0A0C8;
+  --arc-cool:     #A0A0C8;
+  --text-primary: #E8E8F5;
+  --border:       rgba(160,160,200,0.12);
+}
+
+/* Cinzel serif for Bond display text */
+[data-theme="bond"] .font-display,
+[data-theme="bond"] h1,
+[data-theme="bond"] h2 {
+  font-family: 'Cinzel', serif;
+}
+
+/* ── Cyberpunk (30 sessions) ── */
+[data-theme="cyberpunk"] {
+  --bg-base:      #030612;
+  --bg-surface:   #06091E;
+  --bg-elevated:  #0A0E2A;
+  --accent:       #00FFFF;
+  --arc-cool:     #00FFFF;
+  --text-primary: #E0F7FA;
+  --border:       rgba(0,255,255,0.12);
+}
+
+/* ── Steampunk (50 sessions) ── */
+[data-theme="steampunk"] {
+  --bg-base:      #120A03;
+  --bg-surface:   #1E1208;
+  --bg-elevated:  #2A1A0C;
+  --accent:       #E8B84B;
+  --arc-cool:     #E8B84B;
+  --text-primary: #F5E6C8;
+  --border:       rgba(232,184,75,0.15);
+}
+
+/* ── Tie Dye (75 sessions) ── */
+[data-theme="tie-dye"] {
+  --bg-base:      #0A0612;
+  --bg-surface:   #130A1E;
+  --bg-elevated:  #1C1028;
+  --accent:       #FF6B6B;
+  --arc-cool:     #FF6B6B;
+  --border:       rgba(255,107,107,0.15);
+}
+
+/* Rainbow hue-rotate on the cool arc progress circle */
+[data-theme="tie-dye"] .arc-progress {
+  stroke: #FF6B6B;
+  animation: tie-dye-arc 4s linear infinite;
+}
+
+@keyframes tie-dye-arc {
+  to { filter: hue-rotate(360deg); }
+}
+
+/* ── Sugar Skull (100 sessions) ── */
+[data-theme="sugar-skull"] {
+  --bg-base:      #06000A;
+  --bg-surface:   #100015;
+  --bg-elevated:  #1C0022;
+  --accent:       #E91E8C;
+  --arc-cool:     #00BCD4;
+  --text-primary: #F3E5F5;
+  --border:       rgba(233,30,140,0.15);
+}
