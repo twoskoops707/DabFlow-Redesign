@@ -330,19 +330,13 @@ function renderAchievements(sessions) {
   }).join('');
 
   let themeHTML = '';
-  if (typeof THEMES !== 'undefined') {
-    const streak = calcBestStreak(sessions);
+  if (typeof THEMES !== 'undefined' && typeof isThemeUnlocked === 'function') {
     themeHTML = `
       <div style="grid-column:1/-1;margin-top:var(--sp-4);">
         <p class="section-title" style="margin-bottom:var(--sp-3);">Themes</p>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2);">
           ${THEMES.map(theme => {
-            let unlocked;
-            if (window.BUILD_VARIANT === 'premium') unlocked = true;
-            else if (theme.unlockType === 'always') unlocked = true;
-            else if (theme.unlockType === 'sessions') unlocked = sessions.length >= theme.unlockVal;
-            else if (theme.unlockType === 'streak') unlocked = streak >= theme.unlockVal;
-            else unlocked = false;
+            const unlocked = isThemeUnlocked(theme);
 
             const swatch = theme.arcCool
               ? theme.arcCool

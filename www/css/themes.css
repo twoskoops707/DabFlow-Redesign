@@ -53,6 +53,13 @@
   z-index: 2;
 }
 
+/* Share Tech Mono throughout Terminal theme */
+[data-theme="terminal"] body,
+[data-theme="terminal"] .font-display,
+[data-theme="terminal"] .font-mono {
+  font-family: 'Share Tech Mono', monospace;
+}
+
 /* ── Bond (7-day streak) ── */
 [data-theme="bond"] {
   --bg-base:      #0B0B14;
