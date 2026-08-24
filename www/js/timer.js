@@ -2,7 +2,6 @@
 
 const PHASE_COLORS = {
   heat: '#EF4444',
-  hold: '#00C46A',
   cool: null,   // read from --arc-cool at runtime
 };
 
@@ -89,8 +88,7 @@ function initTimer() {
 
 function buildPhases(config) {
   return [
-    { name: 'heat', label: 'Heat',      duration: config.heat, color: PHASE_COLORS.heat },
-    { name: 'hold', label: 'Hold',      duration: config.hold, color: PHASE_COLORS.hold },
+    { name: 'heat', label: 'Heat Up',   duration: config.heat, color: PHASE_COLORS.heat },
     { name: 'cool', label: 'Cool Down', duration: config.cool, color: PHASE_COLORS.cool },
   ].filter(p => p.duration > 0);
 }
@@ -106,7 +104,6 @@ function updatePhaseLabel(text, phaseName) {
   if (!el) return;
   el.textContent = text;
   if (phaseName === 'heat')      el.style.color = PHASE_COLORS.heat;
-  else if (phaseName === 'hold') el.style.color = PHASE_COLORS.hold;
   else if (phaseName === 'cool') el.style.color = _getCoolColor();
   else                           el.style.color = '';
 }
@@ -154,7 +151,7 @@ function cancelHold() {
 }
 
 function startTimer() {
-  const config  = window._timerConfig || { heat: 18, hold: 6, cool: 60 };
+  const config  = window._timerConfig || { heat: 18, cool: 60 };
   _phases          = buildPhases(config);
   _currentPhaseIdx = 0;
   _phaseElapsed    = 0;

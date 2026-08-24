@@ -4,21 +4,24 @@ const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings'];
 let currentScreen = 'home';
 
 const MATERIAL_PRESETS = [
-  { id: 'quartz',   label: 'Quartz',   heat: 18, hold: 6, cool: 60 },
-  { id: 'titanium', label: 'Titanium', heat: 15, hold: 6, cool: 70 },
-  { id: 'ceramic',  label: 'Ceramic',  heat: 20, hold: 6, cool: 75 },
+  { id: 'quartz',   label: 'Quartz',   heat: 18, cool: 60 },
+  { id: 'titanium', label: 'Titanium', heat: 15, cool: 70 },
+  { id: 'ceramic',  label: 'Ceramic',  heat: 20, cool: 75 },
 ];
 
-// cool-time modifiers per concentrate (matches original app behaviour)
+// cool-time modifiers per concentrate (matches original app)
 const CONCENTRATE_MOD = {
-  'Shatter':   1.00, 'Wax':      0.93, 'Live Resin': 1.05,
-  'Rosin':     1.08, 'Diamonds': 1.15, 'Crumble':    0.95,
-  'Budder':    0.97, 'Sauce':    1.10, 'Hash Rosin': 1.12,
+  'Shatter':    1.00, 'Wax':      0.93, 'Live Resin': 1.05,
+  'Rosin':      1.08, 'Diamonds': 1.15, 'Crumble':    0.95,
+  'Budder':     0.97, 'Sauce':    1.10, 'Hash Rosin': 1.12,
   'Distillate': 0.90,
 };
 
-// heat-time modifiers per heating source
-const HEATER_MOD = { 'Butane': 1.1, 'Propane': 1.0 };
+// heat and cool modifiers per heating source (matches original app)
+const HEATER_MOD = {
+  'Butane':  { heat: 1.1, cool: 1.0  },
+  'Propane': { heat: 1.0, cool: 0.95 },
+};
 
 const CONCENTRATES = [
   'Shatter','Wax','Live Resin','Rosin','Diamonds',
@@ -114,13 +117,12 @@ function formatRelTime(ts) {
 }
 
 function calcTimerConfig() {
-  const preset = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
-  const hMod   = HEATER_MOD[_homeHeatingSource]    || 1.0;
-  const cMod   = CONCENTRATE_MOD[_homeConcentrate] || 1.0;
+  const preset  = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
+  const heater  = HEATER_MOD[_homeHeatingSource] || { heat: 1.0, cool: 1.0 };
+  const cMod    = CONCENTRATE_MOD[_homeConcentrate] || 1.0;
   return {
-    heat: Math.round(preset.heat * hMod),
-    hold: preset.hold,
-    cool: Math.round(preset.cool * cMod),
+    heat: Math.min(20, Math.round(preset.heat * heater.heat)),
+    cool: Math.min(85, Math.max(50, Math.round(preset.cool * heater.cool * cMod))),
   };
 }
 
@@ -244,19 +246,18 @@ function renderHome() {
       ${(() => {
         const cfg = calcTimerConfig();
         const phases = [
-          { label: 'Heat', val: cfg.heat, color: '#EF4444' },
-          { label: 'Hold', val: cfg.hold, color: '#2ECC8A' },
-          { label: 'Cool', val: cfg.cool, color: '#5B9CF6' },
+          { label: 'Heat Up',   val: cfg.heat, color: '#EF4444' },
+          { label: 'Cool Down', val: cfg.cool, color: '#5B9CF6' },
         ];
-        return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
+        return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3);margin-bottom:var(--sp-5);">
           ${phases.map(p => `
             <div style="
               background:var(--bg-surface);border:1px solid var(--border);
-              border-radius:var(--r-md);padding:var(--sp-3) var(--sp-2);
+              border-radius:var(--r-md);padding:var(--sp-4) var(--sp-2);
               text-align:center;
             ">
-              <div class="font-mono" style="font-size:1.15rem;font-weight:700;color:${p.color};">${p.val}s</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">${p.label}</div>
+              <div class="font-mono" style="font-size:1.4rem;font-weight:700;color:${p.color};">${p.val}s</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">${p.label}</div>
             </div>`).join('')}
         </div>`;
       })()}
@@ -362,7 +363,7 @@ function saveSetting(key, value) {
 
 function adjustSetting(key, delta) {
   const s = getSettings();
-  const defaults = { heat: 18, hold: 6, cool: 60 };
+  const defaults = { heat: 18, cool: 60 };
   const val = Math.max(5, (s[key] !== undefined ? s[key] : defaults[key]) + delta);
   saveSetting(key, val);
   const el = document.getElementById('setting-' + key);
@@ -455,7 +456,6 @@ function renderSettings() {
         <div class="card" style="margin-bottom:var(--sp-4);">
           <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
             ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 18)}
-            ${timerSettingRow('hold', 'Hold Time', s.hold !== undefined ? s.hold : 6)}
             ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 60)}
           </div>
         </div>
