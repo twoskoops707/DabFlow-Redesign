@@ -1,0 +1,130 @@
+name: Redesign - Build 3 APK Variants
+
+on:
+  push:
+    branches: [ ui-redesign-modern ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-variants:
+    name: Build Standard + Premium + Debug APKs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+
+      # --- Build 1: Standard Release APK ---
+      - name: Build Standard Release APK
+        working-directory: ./android
+        env:
+          KEYSTORE_FILE: upload-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Save Standard APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk /tmp/dabflow-standard.apk
+
+      # --- Build 2: Premium APK (all features unlocked) ---
+      - name: Enable Premium Mode
+        run: sed -i 's/const DEBUG_MODE = false/const DEBUG_MODE = true/' www/js/app.js
+
+      - name: Sync Capacitor (Premium)
+        run: npx cap sync android
+
+      - name: Build Premium Release APK
+        working-directory: ./android
+        env:
+          KEYSTORE_FILE: upload-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Save Premium APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk /tmp/dabflow-premium.apk
+
+      # --- Build 3: Debug APK (unsigned, for quick sideload testing) ---
+      - name: Restore Standard Mode
+        run: sed -i 's/const DEBUG_MODE = true/const DEBUG_MODE = false/' www/js/app.js
+
+      - name: Sync Capacitor (Debug)
+        run: npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Save Debug APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/dabflow-debug.apk
+
+      # --- Publish all 3 ---
+      - name: Get version from package.json
+        id: version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Publish 3-variant release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          TAG="redesign-v${VERSION}-$(date +%Y%m%d-%H%M%S)"
+
+          gh release create "${TAG}" \
+            /tmp/dabflow-standard.apk#dabflow-standard.apk \
+            /tmp/dabflow-premium.apk#dabflow-premium-unlocked.apk \
+            /tmp/dabflow-debug.apk#dabflow-debug.apk \
+            --title "DabFlow Redesign v${VERSION} — 3 APK Variants" \
+            --notes "## DabFlow UI Redesign Build
+
+          Commit: ${COMMIT_SHA}
+
+          ### Downloads
+          | APK | Description |
+          |-----|-------------|
+          | \`dabflow-standard.apk\` | Signed release — normal user experience |
+          | \`dabflow-premium-unlocked.apk\` | Signed release — all premium features unlocked |
+          | \`dabflow-debug.apk\` | Unsigned debug build — quick sideload for testing |
+
+          ### What's new in this build
+          - Crystalline Premium redesign UI (redesign/ folder)
+          - XP + Level system (Novice → Legend)
+          - Daily challenges with countdown
+          - Session quality score overlay
+          - 28-day activity heat map
+          - Streak shield protection system
+
+          🤖 Built with Claude Code"

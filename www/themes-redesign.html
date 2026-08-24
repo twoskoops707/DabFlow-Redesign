@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Bright Tag Vignette Ad -->
+    <script>(function(s){s.dataset.zone='10476006',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Themes - DabFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --amber-gold: #FFB84D;
+            --amber-deep: #E89B3C;
+            --crystal-white: #F8FAFE;
+            --vapor-blue: #A5D8FF;
+            --glass-frost: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+            --bg-primary: #0A0E1A;
+            --bg-secondary: #151922;
+            --bg-card: #1A1F2E;
+            --text-primary: #F8FAFE;
+            --text-secondary: #94A3B8;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: var(--space-lg);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xl);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .page-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .premium-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            color: var(--bg-primary);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Current Theme Preview */
+        .current-theme {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 24px;
+            padding: var(--space-xl);
+            border: 2px solid var(--amber-gold);
+            margin-bottom: var(--space-xl);
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 184, 77, 0.2);
+        }
+
+        .current-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .current-theme-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-md);
+        }
+
+        .theme-preview-box {
+            width: 100%;
+            height: 200px;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: var(--space-md);
+        }
+
+        .theme-preview-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        /* Theme Grid */
+        .section-header {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin: var(--space-xl) 0 var(--space-md);
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .theme-card {
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .theme-card.unlocked {
+            touch-action: manipulation;
+        }
+
+        .theme-card.unlocked:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px var(--shadow-dark);
+        }
+
+        .theme-card.unlocked:active {
+            transform: scale(0.97);
+        }
+
+        .theme-card.locked {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .theme-card.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            z-index: 2;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+        }
+
+        .theme-color-bar {
+            height: 100px;
+            position: relative;
+        }
+
+        .theme-info {
+            padding: var(--space-md);
+        }
+
+        .theme-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .theme-unlock {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .theme-unlock.unlocked {
+            color: var(--amber-gold);
+        }
+
+        /* Specific Theme Colors */
+        .theme-crystalline { background: linear-gradient(135deg, #FFB84D 0%, #A5D8FF 100%); }
+        .theme-lava        { background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); }
+        .theme-ice         { background: linear-gradient(135deg, #A5D8FF 0%, #E0F2FE 100%); }
+        .theme-amber       { background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%); }
+        .theme-aurora      { background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #10B981 100%); }
+        .theme-ocean       { background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%); }
+        .theme-crimson     { background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); }
+        .theme-midnight    { background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); }
+        .theme-sunset      { background: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDE047 100%); }
+        .theme-forest      { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .theme-galaxy      { background: linear-gradient(135deg, #581C87 0%, #1E3A8A 50%, #000000 100%); }
+        .theme-paradise    { background: linear-gradient(135deg, #22C55E 0%, #84CC16 100%); }
+        .theme-cheech      { background: linear-gradient(135deg, #EAB308 0%, #CA8A04 50%, #92400E 100%); }
+        .theme-rainbow     { background: linear-gradient(135deg, #EF4444 0%, #F59E0B 20%, #EAB308 40%, #22C55E 60%, #3B82F6 80%, #8B5CF6 100%); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: calc(90px + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 1px solid var(--amber-gold);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--glass-border);
+            padding: var(--space-md) var(--space-lg);
+            padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .nav-item.active {
+            color: var(--amber-gold);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="back-btn" onclick="window.location.href='index-redesign.html'" role="button" tabindex="0" aria-label="Back">←</div>
+            <div class="page-title">Themes</div>
+        </div>
+        <div class="premium-badge">6/14</div>
+    </div>
+
+    <!-- Current Theme -->
+    <div class="current-theme">
+        <div class="current-label">Currently Active</div>
+        <div class="current-theme-name" id="currentThemeName">Crystalline</div>
+        <div class="theme-preview-box">
+            <div class="theme-color-bar theme-crystalline" id="currentThemeBar" style="height: 100%;"></div>
+            <div class="theme-preview-overlay"></div>
+        </div>
+        <div style="font-size: 13px; color: var(--text-secondary);">The default premium experience</div>
+    </div>
+
+    <!-- Free Themes -->
+    <div class="section-header">Free Themes (6)</div>
+    <div class="theme-grid">
+        <div class="theme-card unlocked" data-theme-name="Crystalline" data-theme-class="theme-crystalline">
+            <div class="theme-color-bar theme-crystalline"></div>
+            <div class="theme-info">
+                <div class="theme-name">Crystalline</div>
+                <div class="theme-unlock unlocked">✓ Default</div>
+            </div>
+        </div>
+
+        <div class="theme-card unlocked" data-theme-name="Lava Flow" data-theme-class="theme-lava">
+            <div class="theme-color-bar theme-lava"></div>
+            <div class="theme-info">
+                <div class="theme-name">Lava Flow</div>
+                <div class="theme-unlock unlocked">✓ Unlocked</div>
+            </div>
+        </div>
+
+        <div class="theme-card unlocked" data-theme-name="Ice Crystal" data-theme-class="theme-ice">
+            <div class="theme-color-bar theme-ice"></div>
+            <div class="theme-info">
+                <div class="theme-name">Ice Crystal</div>
+                <div class="theme-unlock unlocked">✓ Unlocked</div>
+            </div>
+        </div>
+
+        <div class="theme-card unlocked" data-theme-name="Midnight" data-theme-class="theme-midnight">
+            <div class="theme-color-bar theme-midnight"></div>
+            <div class="theme-info">
+                <div class="theme-name">Midnight</div>
+                <div class="theme-unlock unlocked">✓ Unlocked</div>
+            </div>
+        </div>
+
+        <div class="theme-card unlocked" data-theme-name="Sunset" data-theme-class="theme-sunset">
+            <div class="theme-color-bar theme-sunset"></div>
+            <div class="theme-info">
+                <div class="theme-name">Sunset</div>
+                <div class="theme-unlock unlocked">✓ Unlocked</div>
+            </div>
+        </div>
+
+        <div class="theme-card unlocked" data-theme-name="Forest" data-theme-class="theme-forest">
+            <div class="theme-color-bar theme-forest"></div>
+            <div class="theme-info">
+                <div class="theme-name">Forest</div>
+                <div class="theme-unlock unlocked">✓ Unlocked</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Themes -->
+    <div class="section-header">Achievement Themes (8)</div>
+    <div class="theme-grid">
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-amber"></div>
+            <div class="theme-info">
+                <div class="theme-name">Golden Amber</div>
+                <div class="theme-unlock">50 sessions</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-aurora"></div>
+            <div class="theme-info">
+                <div class="theme-name">Aurora</div>
+                <div class="theme-unlock">100 sessions</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-ocean"></div>
+            <div class="theme-info">
+                <div class="theme-name">Ocean Teal</div>
+                <div class="theme-unlock">7 day streak</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-crimson"></div>
+            <div class="theme-info">
+                <div class="theme-name">Crimson Red</div>
+                <div class="theme-unlock">30 day streak</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-galaxy"></div>
+            <div class="theme-info">
+                <div class="theme-name">Galaxy</div>
+                <div class="theme-unlock">All achievements</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-paradise"></div>
+            <div class="theme-info">
+                <div class="theme-name">Paradise</div>
+                <div class="theme-unlock">500 sessions</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-cheech"></div>
+            <div class="theme-info">
+                <div class="theme-name">Cheech &amp; Chong</div>
+                <div class="theme-unlock">1000 sessions</div>
+            </div>
+        </div>
+
+        <div class="theme-card locked">
+            <div class="theme-color-bar theme-rainbow"></div>
+            <div class="theme-info">
+                <div class="theme-name">Rainbow</div>
+                <div class="theme-unlock">All concentrates</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index-redesign.html" class="nav-item">
+            <div class="nav-icon">⏱️</div>
+            <div class="nav-label">Timer</div>
+        </a>
+        <a href="stats-redesign.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Stats</div>
+        </a>
+        <a href="achievements-redesign.html" class="nav-item">
+            <div class="nav-icon">🏆</div>
+            <div class="nav-label">Achievements</div>
+        </a>
+        <a href="themes-redesign.html" class="nav-item active">
+            <div class="nav-icon">🎨</div>
+            <div class="nav-label">Themes</div>
+        </a>
+    </nav>
+
+    <script>
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        let activeCard = null;
+        const themeCards = document.querySelectorAll('.theme-card.unlocked');
+
+        themeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Deselect previous
+                if (activeCard) activeCard.style.boxShadow = '';
+                activeCard = card;
+                card.style.boxShadow = '0 0 0 2px #FFB84D, 0 0 20px rgba(255,184,77,0.3)';
+
+                const themeName  = card.dataset.themeName;
+                const themeClass = card.dataset.themeClass;
+
+                // Update "Currently Active" preview
+                document.getElementById('currentThemeName').textContent = themeName;
+                const previewBar = document.getElementById('currentThemeBar');
+                previewBar.className = 'theme-color-bar ' + themeClass;
+
+                showToast('Switched to ' + themeName);
+            });
+        });
+
+        // Highlight the Crystalline card on load (default active theme)
+        const defaultCard = document.querySelector('[data-theme-name="Crystalline"]');
+        if (defaultCard) {
+            defaultCard.style.boxShadow = '0 0 0 2px #FFB84D, 0 0 20px rgba(255,184,77,0.3)';
+            activeCard = defaultCard;
+        }
+    </script>
+</body>
+</html>

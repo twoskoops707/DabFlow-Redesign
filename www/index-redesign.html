@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Bright Tag Vignette Ad -->
+    <script>(function(s){s.dataset.zone='10476006',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0A0E1A">
+    <title>DabFlow - Precision Timer</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Audiowide&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Crystalline Premium Color Palette */
+            --amber-gold: #FFB84D;
+            --amber-deep: #E89B3C;
+            --crystal-white: #F8FAFE;
+            --vapor-blue: #A5D8FF;
+            --glass-frost: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+            --bg-primary: #0A0E1A;
+            --bg-secondary: #151922;
+            --bg-card: #1A1F2E;
+            --text-primary: #F8FAFE;
+            --text-secondary: #94A3B8;
+            --titanium: #B8BFC7;
+            --quartz: #E8F4FD;
+            --ceramic: #F4E4D7;
+            --success: #4ADE80;
+            --danger: #FF6B6B;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+
+            /* Effects */
+            --blur-sm: 8px;
+            --blur-md: 16px;
+            --blur-lg: 24px;
+            --glow-amber: 0 0 40px rgba(255, 184, 77, 0.4);
+            --glow-blue: 0 0 40px rgba(165, 216, 255, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out;
+            will-change: transform;
+        }
+
+        .bg-orb:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--amber-gold), transparent);
+            top: 10%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .bg-orb:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--vapor-blue), transparent);
+            top: 60%;
+            right: -15%;
+            animation-delay: 7s;
+        }
+
+        .bg-orb:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #8B5CF6, transparent);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Main Container */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: var(--space-lg);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2xl);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--vapor-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--glass-frost);
+            backdrop-filter: blur(var(--blur-sm));
+            -webkit-backdrop-filter: blur(var(--blur-sm));
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+            font-size: 18px;
+            touch-action: manipulation;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        .icon-btn:hover {
+            background: var(--glass-border);
+            box-shadow: var(--glow-amber);
+        }
+
+        /* Timer Card */
+        .timer-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 32px;
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-xl);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--shadow-dark);
+            animation: scaleIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        /* Timer Display */
+        .timer-display {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto var(--space-xl);
+        }
+
+        .timer-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+        }
+
+        .timer-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .timer-ring circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .timer-ring .track {
+            stroke: var(--glass-frost);
+        }
+
+        .timer-ring .progress {
+            stroke: url(#timerGradient);
+            stroke-dasharray: 820;
+            stroke-dashoffset: 820;
+            transition: stroke-dashoffset 1s linear;
+            filter: drop-shadow(var(--glow-amber));
+        }
+
+        .timer-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 200px;
+        }
+
+        .timer-value {
+            font-family: 'Audiowide', cursive;
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-sm);
+            filter: drop-shadow(0 0 20px rgba(255, 184, 77, 0.5));
+        }
+
+        .timer-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+
+        .phase-indicator {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .phase-heating {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .phase-cooling {
+            background: linear-gradient(135deg, var(--vapor-blue) 0%, #7DD3FC 100%);
+            box-shadow: 0 4px 16px rgba(165, 216, 255, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        /* Material Selection */
+        .material-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .material-btn {
+            background: var(--glass-frost);
+            backdrop-filter: blur(var(--blur-sm));
+            -webkit-backdrop-filter: blur(var(--blur-sm));
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            padding: var(--space-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .material-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, var(--glass-border) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .material-btn:hover::before {
+            opacity: 1;
+        }
+
+        .material-btn.active {
+            border-color: var(--amber-gold);
+            background: linear-gradient(135deg, rgba(255, 184, 77, 0.1) 0%, rgba(255, 184, 77, 0.05) 100%);
+            box-shadow: 0 0 24px rgba(255, 184, 77, 0.3);
+        }
+
+        .material-icon {
+            font-size: 32px;
+            margin-bottom: var(--space-xs);
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .material-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            color: var(--bg-primary);
+            box-shadow: 0 8px 24px rgba(255, 184, 77, 0.4);
+        }
+
+        .btn-start:active {
+            transform: scale(0.98);
+        }
+
+        .btn-start::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-start:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary {
+            background: var(--glass-frost);
+            backdrop-filter: blur(var(--blur-sm));
+            -webkit-backdrop-filter: blur(var(--blur-sm));
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            touch-action: manipulation;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+            animation: slideUp 0.8s ease-out 0.4s both;
+            align-items: start;
+        }
+
+        .stat-card {
+            background: var(--glass-frost);
+            backdrop-filter: blur(var(--blur-md));
+            -webkit-backdrop-filter: blur(var(--blur-md));
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: var(--space-md);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px var(--shadow-dark);
+        }
+
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--amber-gold);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 500;
+        }
+
+        /* Achievement Preview */
+        .achievement-preview {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 24px;
+            padding: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            margin-bottom: var(--space-xl);
+            animation: slideUp 0.8s ease-out 0.6s both;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .achievement-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .achievement-view-all {
+            font-size: 13px;
+            color: var(--amber-gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .achievement-list {
+            display: flex;
+            gap: var(--space-md);
+            overflow-x: auto;
+            padding-bottom: var(--space-sm);
+            scrollbar-width: none;
+        }
+
+        .achievement-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .achievement-item {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .achievement-badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--glass-frost);
+            backdrop-filter: blur(var(--blur-sm));
+            -webkit-backdrop-filter: blur(var(--blur-sm));
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto var(--space-sm);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .achievement-badge.unlocked {
+            border-color: var(--amber-gold);
+            box-shadow: var(--glow-amber);
+            animation: bounce 0.6s ease;
+        }
+
+        .achievement-badge.locked {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .achievement-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--blur-lg));
+            -webkit-backdrop-filter: blur(var(--blur-lg));
+            border-top: 1px solid var(--glass-border);
+            padding: var(--space-md) var(--space-lg);
+            padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .nav-item.active {
+            color: var(--amber-gold);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .timer-display {
+                width: 240px;
+                height: 240px;
+            }
+
+            .timer-value {
+                font-size: 48px;
+            }
+
+            .material-icon {
+                font-size: 28px;
+            }
+        }
+
+        /* ── XP / Level Bar ── */
+        .xp-bar-section {
+            margin-bottom: var(--space-xl);
+            animation: slideUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
+        }
+
+        .xp-bar-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .xp-level-badge {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--bg-primary);
+            box-shadow: 0 4px 16px rgba(255, 184, 77, 0.45);
+        }
+
+        .xp-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .xp-level-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--amber-gold);
+            margin-bottom: 4px;
+        }
+
+        .xp-track {
+            width: 100%;
+            height: 8px;
+            background: var(--glass-frost);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .xp-fill {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            box-shadow: 0 0 12px rgba(255, 184, 77, 0.5);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .xp-subtext {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ── XP Toast ── */
+        .xp-toast {
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            padding: 10px 24px;
+            border-radius: 30px;
+            box-shadow: 0 6px 24px rgba(255, 184, 77, 0.5);
+            pointer-events: none;
+            z-index: 200;
+            opacity: 0;
+        }
+
+        .xp-toast.show {
+            animation: xpToastAnim 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes xpToastAnim {
+            0%   { opacity: 0; transform: translateX(-50%) translateY(0); }
+            15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+            60%  { opacity: 1; transform: translateX(-50%) translateY(-40px); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-60px); }
+        }
+
+        /* ── Daily Challenges ── */
+        .daily-challenges {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 24px;
+            padding: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            margin-bottom: var(--space-xl);
+            animation: slideUp 0.8s ease-out 0.5s both;
+        }
+
+        .daily-challenges.all-done {
+            border-color: var(--amber-gold);
+            box-shadow: 0 0 28px rgba(255, 184, 77, 0.25);
+        }
+
+        .challenges-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .challenges-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .challenges-countdown {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .challenges-all-done-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(255, 184, 77, 0.15) 0%, rgba(232, 155, 60, 0.1) 100%);
+            border: 1px solid rgba(255, 184, 77, 0.3);
+            border-radius: 12px;
+            padding: 10px 16px;
+            text-align: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--amber-gold);
+            margin-bottom: var(--space-md);
+        }
+
+        .daily-challenges.all-done .challenges-all-done-banner {
+            display: block;
+        }
+
+        .challenge-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .challenge-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .challenge-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .challenge-top-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .challenge-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .challenge-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .challenge-xp-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--amber-gold);
+            background: rgba(255, 184, 77, 0.12);
+            border: 1px solid rgba(255, 184, 77, 0.25);
+            border-radius: 8px;
+            padding: 2px 7px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .challenge-progress-track {
+            height: 5px;
+            background: var(--glass-frost);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .challenge-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .challenge-right {
+            flex-shrink: 0;
+        }
+
+        .challenge-checkmark {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .challenge-fraction {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+            min-width: 28px;
+        }
+
+        /* ── Session Quality Score Overlay ── */
+        .score-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .score-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .score-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 96px;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(255, 184, 77, 0.5));
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: var(--space-lg);
+        }
+
+        .score-perfect-badge {
+            display: none;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            padding: 6px 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 24px rgba(255, 184, 77, 0.6);
+            margin-bottom: var(--space-lg);
+            text-transform: uppercase;
+        }
+
+        .score-perfect-badge.show {
+            display: inline-block;
+        }
+
+        .score-breakdown {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .score-breakdown-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .score-breakdown-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .score-breakdown-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .score-breakdown-pts {
+            color: var(--amber-gold);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+
+        .score-tap-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Streak Shield (stat card sub-text) ── */
+        .stat-shield-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Canvas -->
+    <div class="bg-canvas">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">DabFlow</div>
+            <div class="header-actions">
+                <div class="icon-btn" role="button" tabindex="0" aria-label="Settings">⚙️</div>
+                <div class="icon-btn" role="button" tabindex="0" aria-label="Profile">👤</div>
+            </div>
+        </header>
+
+        <!-- XP / Level Bar -->
+        <div class="xp-bar-section">
+            <div class="xp-bar-card">
+                <div class="xp-level-badge" id="xpLevelNum">3</div>
+                <div class="xp-info">
+                    <div class="xp-level-name" id="xpLevelName">Artisan</div>
+                    <div class="xp-track">
+                        <div class="xp-fill" id="xpFill"></div>
+                    </div>
+                    <div class="xp-subtext" id="xpSubtext">1240 XP &mdash; 760 XP to next level</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer Card -->
+        <div class="timer-card">
+            <!-- Timer Display -->
+            <div class="timer-display">
+                <div class="timer-ring">
+                    <svg width="100%" height="100%" viewBox="0 0 280 280">
+                        <defs>
+                            <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFB84D;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#E89B3C;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="track" cx="140" cy="140" r="130"></circle>
+                        <circle class="progress" cx="140" cy="140" r="130"></circle>
+                    </svg>
+                </div>
+                <div class="timer-center">
+                    <div class="timer-value">45</div>
+                    <div class="timer-label">Seconds</div>
+                    <div class="phase-indicator phase-cooling">Cooling</div>
+                </div>
+            </div>
+
+            <!-- Material Selector -->
+            <div class="material-selector">
+                <div class="material-btn active" role="button" tabindex="0" aria-pressed="true">
+                    <div class="material-icon">💎</div>
+                    <div class="material-name">Quartz</div>
+                </div>
+                <div class="material-btn" role="button" tabindex="0" aria-pressed="false">
+                    <div class="material-icon">⚡</div>
+                    <div class="material-name">Titanium</div>
+                </div>
+                <div class="material-btn" role="button" tabindex="0" aria-pressed="false">
+                    <div class="material-icon">🏺</div>
+                    <div class="material-name">Ceramic</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button type="button" class="btn-primary btn-start">Start Timer</button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-value">247</div>
+                <div class="stat-label">Total Dabs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">12 🛡️</div>
+                <div class="stat-label">Day Streak</div>
+                <div class="stat-shield-sub">2 shields</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">6/14</div>
+                <div class="stat-label">Themes</div>
+            </div>
+        </div>
+
+        <!-- Daily Challenges -->
+        <div class="daily-challenges" id="dailyChallengesCard">
+            <div class="challenges-header">
+                <div class="challenges-title">Daily Challenges</div>
+                <div class="challenges-countdown" id="challengeCountdown">Resets in --h --m</div>
+            </div>
+            <div class="challenges-all-done-banner">🎉 All challenges done!</div>
+            <div class="challenge-list">
+                <!-- Challenge 1: 1/2 -->
+                <div class="challenge-row">
+                    <div class="challenge-left">
+                        <div class="challenge-top-row">
+                            <span class="challenge-icon">🔥</span>
+                            <span class="challenge-text">Complete 2 sessions today</span>
+                            <span class="challenge-xp-badge">+20 XP</span>
+                        </div>
+                        <div class="challenge-progress-track">
+                            <div class="challenge-progress-fill" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="challenge-right">
+                        <div class="challenge-fraction">1/2</div>
+                    </div>
+                </div>
+                <!-- Challenge 2: DONE -->
+                <div class="challenge-row">
+                    <div class="challenge-left">
+                        <div class="challenge-top-row">
+                            <span class="challenge-icon">💎</span>
+                            <span class="challenge-text">Use Quartz banger</span>
+                            <span class="challenge-xp-badge">+15 XP</span>
+                        </div>
+                        <div class="challenge-progress-track">
+                            <div class="challenge-progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="challenge-right">
+                        <div class="challenge-checkmark">✓</div>
+                    </div>
+                </div>
+                <!-- Challenge 3: 0/1 -->
+                <div class="challenge-row">
+                    <div class="challenge-left">
+                        <div class="challenge-top-row">
+                            <span class="challenge-icon">❄️</span>
+                            <span class="challenge-text">Cool it down: wait 45s</span>
+                            <span class="challenge-xp-badge">+25 XP</span>
+                        </div>
+                        <div class="challenge-progress-track">
+                            <div class="challenge-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="challenge-right">
+                        <div class="challenge-fraction">0/1</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement Preview -->
+        <div class="achievement-preview">
+            <div class="achievement-header">
+                <div class="achievement-title">Achievements</div>
+                <a href="achievements-redesign.html" class="achievement-view-all">View All →</a>
+            </div>
+            <div class="achievement-list">
+                <div class="achievement-item">
+                    <div class="achievement-badge unlocked">🔥</div>
+                    <div class="achievement-name">First Flame</div>
+                </div>
+                <div class="achievement-item">
+                    <div class="achievement-badge unlocked">⚡</div>
+                    <div class="achievement-name">Hot Starter</div>
+                </div>
+                <div class="achievement-item">
+                    <div class="achievement-badge unlocked">💪</div>
+                    <div class="achievement-name">Dedicated</div>
+                </div>
+                <div class="achievement-item">
+                    <div class="achievement-badge locked">🎖️</div>
+                    <div class="achievement-name">Veteran</div>
+                </div>
+                <div class="achievement-item">
+                    <div class="achievement-badge locked">💯</div>
+                    <div class="achievement-name">Century Club</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- XP Toast -->
+    <div class="xp-toast" id="xpToast">+15 XP</div>
+
+    <!-- Session Quality Score Overlay -->
+    <div class="score-overlay" id="scoreOverlay">
+        <div class="score-number" id="scoreNumber">0</div>
+        <div class="score-label">Dab Score</div>
+        <div class="score-perfect-badge" id="scorePerfectBadge">Perfect Dab</div>
+        <div class="score-breakdown" id="scoreBreakdown">
+            <div class="score-breakdown-line">
+                <span class="score-breakdown-label">✓ Full cooldown</span>
+                <span class="score-breakdown-pts">+40 pts</span>
+            </div>
+            <div class="score-breakdown-line">
+                <span class="score-breakdown-label">✓ Quartz material</span>
+                <span class="score-breakdown-pts">+30 pts</span>
+            </div>
+            <div class="score-breakdown-line">
+                <span class="score-breakdown-label">✓ Consistent session</span>
+                <span class="score-breakdown-pts">+17 pts</span>
+            </div>
+        </div>
+        <div class="score-tap-hint">Tap to continue</div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index-redesign.html" class="nav-item active">
+            <div class="nav-icon">⏱️</div>
+            <div class="nav-label">Timer</div>
+        </a>
+        <a href="stats-redesign.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Stats</div>
+        </a>
+        <a href="achievements-redesign.html" class="nav-item">
+            <div class="nav-icon">🏆</div>
+            <div class="nav-label">Achievements</div>
+        </a>
+        <a href="themes-redesign.html" class="nav-item">
+            <div class="nav-icon">🎨</div>
+            <div class="nav-label">Themes</div>
+        </a>
+    </nav>
+
+    <script>
+        // ── XP / Level System ──
+        const XP_LEVELS = [
+            { level: 0, name: 'Novice',       min: 0,    max: 200  },
+            { level: 1, name: 'Apprentice',   min: 200,  max: 500  },
+            { level: 2, name: 'Dabbler',      min: 500,  max: 1000 },
+            { level: 3, name: 'Artisan',      min: 1000, max: 2000 },
+            { level: 4, name: 'Connoisseur',  min: 2000, max: 3500 },
+            { level: 5, name: 'Master',       min: 3500, max: 6000 },
+            { level: 6, name: 'Legend',       min: 6000, max: Infinity }
+        ];
+        const CURRENT_XP   = 1240;
+        const MOCK_LEVEL   = 3;
+        const MOCK_NAME    = 'Artisan';
+        const MOCK_PREV_XP = 1000;   // current level floor
+        const MOCK_NEXT_XP = 2000;   // next level floor
+        const MOCK_BAR_PCT = ((CURRENT_XP - MOCK_PREV_XP) / (MOCK_NEXT_XP - MOCK_PREV_XP)) * 100; // 24%
+        const MOCK_TO_NEXT = MOCK_NEXT_XP - CURRENT_XP;  // 760
+
+        function initXPBar() {
+            document.getElementById('xpLevelNum').textContent = MOCK_LEVEL;
+            document.getElementById('xpLevelName').textContent = MOCK_NAME;
+            document.getElementById('xpSubtext').textContent =
+                CURRENT_XP + ' XP \u2014 ' + MOCK_TO_NEXT + ' XP to next level';
+
+            // Animate bar on load
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    document.getElementById('xpFill').style.width = MOCK_BAR_PCT.toFixed(1) + '%';
+                }, 120);
+            });
+        }
+
+        initXPBar();
+
+        // ── XP Toast ──
+        function showXPToast(amount) {
+            const toast = document.getElementById('xpToast');
+            toast.textContent = '+' + amount + ' XP';
+            toast.classList.remove('show');
+            // Force reflow so the animation restarts
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2100);
+        }
+
+        // ── Daily Challenges Countdown ──
+        function updateChallengeCountdown() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const msLeft = midnight - now;
+            const h = Math.floor(msLeft / 3600000);
+            const m = Math.floor((msLeft % 3600000) / 60000);
+            document.getElementById('challengeCountdown').textContent =
+                'Resets in ' + h + 'h ' + m + 'm';
+        }
+
+        updateChallengeCountdown();
+        setInterval(updateChallengeCountdown, 60000);
+
+        // ── Session Quality Score Overlay ──
+        const SCORE_VALUE = 92;
+        let scoreRAF = null;
+
+        function showScoreOverlay(score) {
+            if (scoreRAF !== null) {
+                cancelAnimationFrame(scoreRAF);
+                scoreRAF = null;
+            }
+
+            const overlay  = document.getElementById('scoreOverlay');
+            const numEl    = document.getElementById('scoreNumber');
+            const badge    = document.getElementById('scorePerfectBadge');
+            const lines    = document.querySelectorAll('#scoreBreakdown .score-breakdown-line');
+
+            numEl.textContent = '0';
+            badge.classList.remove('show');
+            lines.forEach(l => l.classList.remove('visible'));
+            overlay.classList.add('show');
+
+            const duration = 1500;
+            const start = performance.now();
+            function tick(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                numEl.textContent = Math.round(eased * score);
+                if (progress < 1) {
+                    scoreRAF = requestAnimationFrame(tick);
+                } else {
+                    scoreRAF = null;
+                    numEl.textContent = score;
+                    if (score >= 90) badge.classList.add('show');
+                    lines.forEach((line, i) => {
+                        setTimeout(() => line.classList.add('visible'), i * 180);
+                    });
+                }
+            }
+            scoreRAF = requestAnimationFrame(tick);
+        }
+
+        document.getElementById('scoreOverlay').addEventListener('click', function() {
+            this.classList.remove('show');
+        });
+
+        // ── Timer Logic ──
+        const progressCircle = document.querySelector('.progress');
+        const timerValue = document.querySelector('.timer-value');
+        const phaseIndicator = document.querySelector('.phase-indicator');
+        const startBtn = document.querySelector('.btn-start');
+
+        const CIRCUMFERENCE = 2 * Math.PI * 130;
+        const MAX_TIME = 45;
+
+        progressCircle.style.strokeDasharray = CIRCUMFERENCE;
+        progressCircle.style.strokeDashoffset = CIRCUMFERENCE;
+
+        let timerInterval;
+        let currentTime = MAX_TIME;
+        let isRunning = false;
+        let naturalCompletion = false;
+
+        function updateTimer() {
+            const offset = CIRCUMFERENCE - (currentTime / MAX_TIME) * CIRCUMFERENCE;
+            progressCircle.style.strokeDashoffset = offset;
+            timerValue.textContent = currentTime;
+
+            if (currentTime > 0 && isRunning) {
+                currentTime--;
+            } else if (currentTime === 0) {
+                naturalCompletion = true;
+                stopTimer();
+            }
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                naturalCompletion = false;
+                startBtn.textContent = 'Stop Timer';
+                startBtn.classList.add('btn-secondary');
+                startBtn.classList.remove('btn-start');
+                timerInterval = setInterval(updateTimer, 1000);
+            } else {
+                stopTimer();
+            }
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            startBtn.textContent = 'Start Timer';
+            startBtn.classList.add('btn-start');
+            startBtn.classList.remove('btn-secondary');
+
+            if (naturalCompletion) {
+                showXPToast(15);
+                setTimeout(() => showScoreOverlay(SCORE_VALUE), 300);
+                naturalCompletion = false;
+            }
+
+            currentTime = MAX_TIME;
+            // Snap ring and text back together (no desync from CSS transition)
+            progressCircle.style.transition = 'none';
+            updateTimer();
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                progressCircle.style.transition = '';
+            }));
+        }
+
+        startBtn.addEventListener('click', startTimer);
+
+        // Material Selection
+        const materialBtns = document.querySelectorAll('.material-btn');
+        materialBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                materialBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+            });
+        });
+
+        // Initial timer setup
+        updateTimer();
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('.btn-primary, .icon-btn, .material-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+
+                this.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body>
+</html>

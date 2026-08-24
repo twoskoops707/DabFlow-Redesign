@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Bright Tag Vignette Ad -->
+    <script>(function(s){s.dataset.zone='10476006',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Achievements - DabFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --amber-gold: #FFB84D;
+            --amber-deep: #E89B3C;
+            --crystal-white: #F8FAFE;
+            --vapor-blue: #A5D8FF;
+            --glass-frost: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+            --bg-primary: #0A0E1A;
+            --bg-secondary: #151922;
+            --bg-card: #1A1F2E;
+            --text-primary: #F8FAFE;
+            --text-secondary: #94A3B8;
+            --success: #4ADE80;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: var(--space-lg);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .page-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        /* Progress Header */
+        .progress-header {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 24px;
+            padding: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            margin-bottom: var(--space-xl);
+            text-align: center;
+        }
+
+        .progress-stat {
+            font-family: 'Syne', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: var(--glass-frost);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            border-radius: 20px;
+            width: 55%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(255, 184, 77, 0.5);
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .filter-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        .filter-tab.active {
+            background: var(--amber-gold);
+            color: var(--bg-primary);
+            border-color: var(--amber-gold);
+        }
+
+        /* Achievement Grid */
+        .achievement-grid {
+            display: grid;
+            gap: var(--space-md);
+        }
+
+        .achievement-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 20px;
+            padding: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            gap: var(--space-md);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, var(--amber-gold), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .achievement-card.unlocked::before {
+            opacity: 0.08;
+        }
+
+        .achievement-card.locked {
+            opacity: 0.65;
+        }
+
+        .achievement-icon-large {
+            width: 70px;
+            height: 70px;
+            min-width: 70px;
+            border-radius: 16px;
+            background: var(--glass-frost);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            position: relative;
+        }
+
+        .achievement-card.unlocked .achievement-icon-large {
+            border-color: var(--amber-gold);
+            box-shadow: 0 0 24px rgba(255, 184, 77, 0.4);
+            animation: glow 4s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 24px rgba(255, 184, 77, 0.4); }
+            50% { box-shadow: 0 0 32px rgba(255, 184, 77, 0.6); }
+        }
+
+        .achievement-card.locked .achievement-icon-large {
+            filter: grayscale(100%);
+        }
+
+        .achievement-content {
+            flex: 1;
+            position: relative;
+        }
+
+        .achievement-name-large {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .achievement-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+            line-height: 1.5;
+        }
+
+        .achievement-reward {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .achievement-card.unlocked .achievement-reward {
+            background: rgba(255, 184, 77, 0.1);
+            color: var(--amber-gold);
+            border-color: rgba(255, 184, 77, 0.2);
+        }
+
+        .achievement-locked-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: var(--space-sm);
+        }
+
+        /* Tier Headers */
+        .tier-header {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin: var(--space-xl) 0 var(--space-md);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* ── Streak Shield Section ── */
+        .streak-shield-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-radius: 24px;
+            padding: var(--space-lg);
+            border: 1px solid var(--glass-border);
+            margin-bottom: var(--space-xl);
+            animation: slideUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .shield-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+        }
+
+        .shield-card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .shield-streak-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 184, 77, 0.1);
+            border: 1px solid rgba(255, 184, 77, 0.25);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--amber-gold);
+        }
+
+        .shield-icons-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: var(--space-md);
+        }
+
+        .shield-icons-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .shield-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            font-size: 20px;
+            box-shadow: 0 0 16px rgba(255, 184, 77, 0.45);
+        }
+
+        .shield-badge.empty {
+            background: var(--glass-frost);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+            filter: grayscale(100%);
+            opacity: 0.4;
+        }
+
+        .shield-explanation {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--space-md);
+        }
+
+        .shield-use-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--amber-gold) 0%, var(--amber-deep) 100%);
+            color: var(--bg-primary);
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 6px 20px rgba(255, 184, 77, 0.35);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: manipulation;
+        }
+
+        .shield-use-btn:active {
+            transform: scale(0.97);
+        }
+
+        .shield-use-btn:disabled,
+        .shield-use-btn.disabled {
+            background: var(--glass-frost);
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .shield-count-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-left: var(--space-md);
+            font-weight: 500;
+        }
+
+        .shield-action-row {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--glass-border);
+            padding: var(--space-md) var(--space-lg);
+            padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .nav-item.active {
+            color: var(--amber-gold);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="back-btn" onclick="window.location.href='index-redesign.html'" role="button" tabindex="0" aria-label="Back">←</div>
+        <div class="page-title">Achievements</div>
+    </div>
+
+    <!-- Progress Header -->
+    <div class="progress-header">
+        <div class="progress-stat">6/11</div>
+        <div class="progress-label">Achievements Unlocked</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill"></div>
+        </div>
+    </div>
+
+    <!-- Streak Protection -->
+    <div class="streak-shield-card" id="streakShieldCard">
+        <div class="shield-card-header">
+            <div class="shield-card-title">Streak Protection</div>
+            <div class="shield-streak-pill">12 🔥</div>
+        </div>
+        <div class="shield-icons-row">
+            <span class="shield-icons-label">Shields available:</span>
+            <div id="shieldBadges"></div>
+        </div>
+        <div class="shield-explanation">
+            A shield protects your streak if you miss a day. Earn more shields from achievements.
+        </div>
+        <div class="shield-action-row">
+            <button type="button" class="shield-use-btn" id="useShieldBtn" onclick="useShield()">Use Shield</button>
+            <span class="shield-count-text" id="shieldCountText">2 shields remaining</span>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <div class="filter-tab active" role="tab" tabindex="0">All</div>
+        <div class="filter-tab" role="tab" tabindex="0">Unlocked</div>
+        <div class="filter-tab" role="tab" tabindex="0">Locked</div>
+        <div class="filter-tab" role="tab" tabindex="0">Sessions</div>
+        <div class="filter-tab" role="tab" tabindex="0">Streaks</div>
+        <div class="filter-tab" role="tab" tabindex="0">Materials</div>
+    </div>
+
+    <!-- Starter Tier -->
+    <div class="tier-header" data-tier="Starter Tier">Starter Tier</div>
+    <div class="achievement-grid" data-tier-grid="Starter Tier">
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">🔥</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">First Flame</div>
+                <div class="achievement-description">Complete your first session</div>
+                <div class="achievement-reward">✓ Tutorial Badge Unlocked</div>
+            </div>
+        </div>
+
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">⚡</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Hot Starter</div>
+                <div class="achievement-description">Complete 5 sessions</div>
+                <div class="achievement-reward">✓ Lava Flow Theme Unlocked</div>
+            </div>
+        </div>
+
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">💪</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Dedicated</div>
+                <div class="achievement-description">Complete 25 sessions</div>
+                <div class="achievement-reward">✓ Ice Crystal Theme Unlocked</div>
+            </div>
+        </div>
+
+        <div class="achievement-card locked">
+            <div class="achievement-icon-large">🎖️</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Veteran</div>
+                <div class="achievement-description">Complete 50 sessions</div>
+                <div class="achievement-reward">🔒 Golden Amber Theme</div>
+                <div class="achievement-locked-text">22 more sessions needed</div>
+            </div>
+        </div>
+
+        <div class="achievement-card locked">
+            <div class="achievement-icon-large">💯</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Century Club</div>
+                <div class="achievement-description">Complete 100 sessions</div>
+                <div class="achievement-reward">🔒 Aurora Borealis Theme</div>
+                <div class="achievement-locked-text">72 more sessions needed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Streak Achievements -->
+    <div class="tier-header" data-tier="Streak Achievements">Streak Achievements</div>
+    <div class="achievement-grid" data-tier-grid="Streak Achievements">
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">🗓️</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Weekend Warrior</div>
+                <div class="achievement-description">Maintain a 3 day streak</div>
+                <div class="achievement-reward">✓ Bronze Streak Badge</div>
+            </div>
+        </div>
+
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">📅</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Week Warrior</div>
+                <div class="achievement-description">Maintain a 7 day streak</div>
+                <div class="achievement-reward">✓ Ocean Teal Theme + Silver Badge</div>
+            </div>
+        </div>
+
+        <div class="achievement-card locked">
+            <div class="achievement-icon-large">📆</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Month Master</div>
+                <div class="achievement-description">Maintain a 30 day streak</div>
+                <div class="achievement-reward">🔒 Crimson Red Theme + Gold Badge</div>
+                <div class="achievement-locked-text">Current streak: 12 days</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Material Specialist -->
+    <div class="tier-header" data-tier="Material Specialist">Material Specialist</div>
+    <div class="achievement-grid" data-tier-grid="Material Specialist">
+        <div class="achievement-card unlocked">
+            <div class="achievement-icon-large">👑</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Quartz King</div>
+                <div class="achievement-description">Use Quartz banger 25 times</div>
+                <div class="achievement-reward">✓ Quartz Master Badge</div>
+            </div>
+        </div>
+
+        <div class="achievement-card locked">
+            <div class="achievement-icon-large">🛡️</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Titanium Titan</div>
+                <div class="achievement-description">Use Titanium nail 25 times</div>
+                <div class="achievement-reward">🔒 Titanium Expert Badge</div>
+                <div class="achievement-locked-text">12/25 sessions</div>
+            </div>
+        </div>
+
+        <div class="achievement-card locked">
+            <div class="achievement-icon-large">🏺</div>
+            <div class="achievement-content">
+                <div class="achievement-name-large">Ceramic Connoisseur</div>
+                <div class="achievement-description">Use Ceramic banger 25 times</div>
+                <div class="achievement-reward">🔒 Ceramic Specialist Badge</div>
+                <div class="achievement-locked-text">8/25 sessions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index-redesign.html" class="nav-item">
+            <div class="nav-icon">⏱️</div>
+            <div class="nav-label">Timer</div>
+        </a>
+        <a href="stats-redesign.html" class="nav-item">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Stats</div>
+        </a>
+        <a href="achievements-redesign.html" class="nav-item active">
+            <div class="nav-icon">🏆</div>
+            <div class="nav-label">Achievements</div>
+        </a>
+        <a href="themes-redesign.html" class="nav-item">
+            <div class="nav-icon">🎨</div>
+            <div class="nav-label">Themes</div>
+        </a>
+    </nav>
+
+    <script>
+        // ── Streak Shield ──
+        let shieldCount = 2;
+
+        function renderShields() {
+            const container = document.getElementById('shieldBadges');
+            const btn       = document.getElementById('useShieldBtn');
+            const countText = document.getElementById('shieldCountText');
+            const MAX_DISPLAY = 3;
+
+            container.innerHTML = '';
+            for (let i = 0; i < Math.min(shieldCount, MAX_DISPLAY); i++) {
+                const b = document.createElement('span');
+                b.className = 'shield-badge';
+                b.textContent = '🛡️';
+                container.appendChild(b);
+            }
+            if (shieldCount === 0) {
+                const empty = document.createElement('span');
+                empty.className = 'shield-badge empty';
+                empty.textContent = '🛡️';
+                container.appendChild(empty);
+            }
+
+            countText.textContent = shieldCount + ' shield' + (shieldCount !== 1 ? 's' : '') + ' remaining';
+
+            if (shieldCount === 0) {
+                btn.classList.add('disabled');
+                btn.disabled = true;
+                btn.textContent = 'No shields available';
+            } else {
+                btn.classList.remove('disabled');
+                btn.disabled = false;
+                btn.textContent = 'Use Shield';
+            }
+        }
+
+        function useShield() {
+            if (shieldCount > 0) {
+                shieldCount--;
+                renderShields();
+            }
+        }
+
+        renderShields();
+
+        // ── Filter Tabs ──
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const allCards   = document.querySelectorAll('.achievement-card');
+        const tierHeaders = document.querySelectorAll('.tier-header');
+        const tierGrids   = document.querySelectorAll('.achievement-grid[data-tier-grid]');
+
+        const tierMap = {
+            'Sessions':  ['Starter Tier'],
+            'Streaks':   ['Streak Achievements'],
+            'Materials': ['Material Specialist']
+        };
+
+        function hideEmptyTiers() {
+            tierHeaders.forEach(h => {
+                const tierName = h.dataset.tier;
+                const grid = document.querySelector('[data-tier-grid="' + tierName + '"]');
+                if (!grid) { h.style.display = 'none'; return; }
+                const anyVisible = Array.from(grid.querySelectorAll('.achievement-card'))
+                    .some(c => c.style.display !== 'none');
+                h.style.display = anyVisible ? '' : 'none';
+                grid.style.display = anyVisible ? '' : 'none';
+            });
+        }
+
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                filterTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const filter = tab.textContent.trim();
+
+                // Reset everything
+                allCards.forEach(card => { card.style.display = ''; });
+                tierHeaders.forEach(h => { h.style.display = ''; });
+                tierGrids.forEach(g => { g.style.display = ''; });
+
+                if (filter === 'Unlocked') {
+                    allCards.forEach(card => {
+                        card.style.display = card.classList.contains('unlocked') ? '' : 'none';
+                    });
+                    hideEmptyTiers();
+                } else if (filter === 'Locked') {
+                    allCards.forEach(card => {
+                        card.style.display = card.classList.contains('locked') ? '' : 'none';
+                    });
+                    hideEmptyTiers();
+                } else if (tierMap[filter]) {
+                    const allowed = tierMap[filter];
+                    tierHeaders.forEach(h => {
+                        const show = allowed.includes(h.dataset.tier);
+                        h.style.display = show ? '' : 'none';
+                        const grid = document.querySelector('[data-tier-grid="' + h.dataset.tier + '"]');
+                        if (grid) grid.style.display = show ? '' : 'none';
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
