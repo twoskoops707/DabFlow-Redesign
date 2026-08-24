@@ -2,7 +2,7 @@ name: Redesign - Build 3 APK Variants
 
 on:
   push:
-    branches: [ ui-redesign-modern ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
