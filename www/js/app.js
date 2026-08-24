@@ -113,18 +113,22 @@ function formatRelTime(ts) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function startSession() {
+function calcTimerConfig() {
   const preset = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
-  const hMod   = HEATER_MOD[_homeHeatingSource]     || 1.0;
-  const cMod   = CONCENTRATE_MOD[_homeConcentrate]  || 1.0;
-  window._selectedMaterial      = _homeMaterial;
-  window._selectedConcentrate   = _homeConcentrate;
-  window._selectedHeatingSource = _homeHeatingSource;
-  window._timerConfig = {
+  const hMod   = HEATER_MOD[_homeHeatingSource]    || 1.0;
+  const cMod   = CONCENTRATE_MOD[_homeConcentrate] || 1.0;
+  return {
     heat: Math.round(preset.heat * hMod),
     hold: preset.hold,
     cool: Math.round(preset.cool * cMod),
   };
+}
+
+function startSession() {
+  window._selectedMaterial      = _homeMaterial;
+  window._selectedConcentrate   = _homeConcentrate;
+  window._selectedHeatingSource = _homeHeatingSource;
+  window._timerConfig           = calcTimerConfig();
   switchScreen('timer');
   setTimeout(initTimer, 50);
 }
@@ -195,8 +199,10 @@ function renderHome() {
               color:${_homeMaterial === p.label ? 'var(--accent)' : 'var(--text-secondary)'};
               font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:600;
               cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;
+              display:flex;flex-direction:column;align-items:center;gap:2px;
             ">
-            ${p.label}
+            <span>${p.label}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:0.58rem;opacity:0.6;">${p.heat}s · ${p.cool}s</span>
           </button>`).join('')}
       </div>
 
@@ -219,7 +225,7 @@ function renderHome() {
 
       <!-- Heating Source selector -->
       <p class="section-title" style="margin-bottom:var(--sp-3);">Heating Source</p>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-2);margin-bottom:var(--sp-6);">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
         ${HEATING_SOURCES.map(h => `
           <button onpointerdown="selectHeatingSource('${h}')"
             style="
@@ -233,6 +239,27 @@ function renderHome() {
             ${h}
           </button>`).join('')}
       </div>
+
+      <!-- Live timer preview -->
+      ${(() => {
+        const cfg = calcTimerConfig();
+        const phases = [
+          { label: 'Heat', val: cfg.heat, color: '#EF4444' },
+          { label: 'Hold', val: cfg.hold, color: '#2ECC8A' },
+          { label: 'Cool', val: cfg.cool, color: '#5B9CF6' },
+        ];
+        return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
+          ${phases.map(p => `
+            <div style="
+              background:var(--bg-surface);border:1px solid var(--border);
+              border-radius:var(--r-md);padding:var(--sp-3) var(--sp-2);
+              text-align:center;
+            ">
+              <div class="font-mono" style="font-size:1.15rem;font-weight:700;color:${p.color};">${p.val}s</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">${p.label}</div>
+            </div>`).join('')}
+        </div>`;
+      })()}
 
       <!-- Start button -->
       <button class="btn-primary fade-up" style="width:100%;font-size:1rem;padding:var(--sp-4);" onpointerdown="startSession()">
