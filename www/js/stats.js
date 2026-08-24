@@ -30,14 +30,14 @@ function renderStats() {
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
           <p class="section-title" style="margin-bottom:var(--sp-4);">Sessions (30 days)</p>
-          <canvas id="chart-sessions" height="160"></canvas>
+          <div style="position:relative;height:140px;"><canvas id="chart-sessions"></canvas></div>
         </div>
       </div>
 
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
           <p class="section-title" style="margin-bottom:var(--sp-4);">Time of Day</p>
-          <canvas id="chart-hour" height="140"></canvas>
+          <div style="position:relative;height:120px;"><canvas id="chart-hour"></canvas></div>
         </div>
       </div>
 
@@ -55,7 +55,7 @@ function renderStats() {
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
           <p class="section-title" style="margin-bottom:var(--sp-4);">Top Brands</p>
-          <canvas id="chart-brand" height="180"></canvas>
+          <div style="position:relative;height:160px;"><canvas id="chart-brand"></canvas></div>
         </div>
       </div>` : ''}
 
@@ -63,7 +63,7 @@ function renderStats() {
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
           <p class="section-title" style="margin-bottom:var(--sp-4);">Top Strains</p>
-          <canvas id="chart-strain" height="200"></canvas>
+          <div style="position:relative;height:180px;"><canvas id="chart-strain"></canvas></div>
         </div>
       </div>` : ''}
 

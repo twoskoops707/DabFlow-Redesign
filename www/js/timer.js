@@ -154,7 +154,7 @@ function cancelHold() {
 }
 
 function startTimer() {
-  const config  = window._timerConfig || { heat: 45, hold: 8, cool: 30 };
+  const config  = window._timerConfig || { heat: 18, hold: 6, cool: 60 };
   _phases          = buildPhases(config);
   _currentPhaseIdx = 0;
   _phaseElapsed    = 0;

@@ -4,23 +4,32 @@ const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings'];
 let currentScreen = 'home';
 
 const MATERIAL_PRESETS = [
-  { id: 'quartz',         label: 'Quartz',         heat: 45, hold: 8,  cool: 30 },
-  { id: 'banger',         label: 'Banger',         heat: 55, hold: 10, cool: 45 },
-  { id: 'titanium',       label: 'Titanium',       heat: 60, hold: 12, cool: 40 },
-  { id: 'ceramic',        label: 'Ceramic',        heat: 50, hold: 10, cool: 35 },
-  { id: 'quartz-thermal', label: 'Quartz Thermal', heat: 35, hold: 8,  cool: 25 },
+  { id: 'quartz',   label: 'Quartz',   heat: 18, hold: 6, cool: 60 },
+  { id: 'titanium', label: 'Titanium', heat: 15, hold: 6, cool: 70 },
+  { id: 'ceramic',  label: 'Ceramic',  heat: 20, hold: 6, cool: 75 },
 ];
+
+// cool-time modifiers per concentrate (matches original app behaviour)
+const CONCENTRATE_MOD = {
+  'Shatter':   1.00, 'Wax':      0.93, 'Live Resin': 1.05,
+  'Rosin':     1.08, 'Diamonds': 1.15, 'Crumble':    0.95,
+  'Budder':    0.97, 'Sauce':    1.10, 'Hash Rosin': 1.12,
+  'Distillate': 0.90,
+};
+
+// heat-time modifiers per heating source
+const HEATER_MOD = { 'Butane': 1.1, 'Propane': 1.0 };
 
 const CONCENTRATES = [
-  'Live Resin','Live Rosin','Shatter','Wax','Distillate',
-  'Budder','Sauce','Diamonds','Hash','Other',
+  'Shatter','Wax','Live Resin','Rosin','Diamonds',
+  'Crumble','Budder','Sauce','Hash Rosin','Distillate',
 ];
 
-const HEATING_SOURCES = ['Torch','E-Nail','E-Rig','Induction Heater'];
+const HEATING_SOURCES = ['Butane', 'Propane'];
 
 let _homeMaterial      = 'Quartz';
-let _homeConcentrate   = 'Live Resin';
-let _homeHeatingSource = 'Torch';
+let _homeConcentrate   = 'Shatter';
+let _homeHeatingSource = 'Butane';
 
 function staggerCards(container) {
   if (!container) return;
@@ -106,10 +115,16 @@ function formatRelTime(ts) {
 
 function startSession() {
   const preset = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
+  const hMod   = HEATER_MOD[_homeHeatingSource]     || 1.0;
+  const cMod   = CONCENTRATE_MOD[_homeConcentrate]  || 1.0;
   window._selectedMaterial      = _homeMaterial;
   window._selectedConcentrate   = _homeConcentrate;
   window._selectedHeatingSource = _homeHeatingSource;
-  window._timerConfig           = { heat: preset.heat, hold: preset.hold, cool: preset.cool };
+  window._timerConfig = {
+    heat: Math.round(preset.heat * hMod),
+    hold: preset.hold,
+    cool: Math.round(preset.cool * cMod),
+  };
   switchScreen('timer');
   setTimeout(initTimer, 50);
 }
@@ -320,7 +335,7 @@ function saveSetting(key, value) {
 
 function adjustSetting(key, delta) {
   const s = getSettings();
-  const defaults = { heat: 45, hold: 8, cool: 30 };
+  const defaults = { heat: 18, hold: 6, cool: 60 };
   const val = Math.max(5, (s[key] !== undefined ? s[key] : defaults[key]) + delta);
   saveSetting(key, val);
   const el = document.getElementById('setting-' + key);
@@ -412,9 +427,9 @@ function renderSettings() {
         <p class="section-title">Timer</p>
         <div class="card" style="margin-bottom:var(--sp-4);">
           <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
-            ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 45)}
-            ${timerSettingRow('hold', 'Hold Time', s.hold !== undefined ? s.hold : 8)}
-            ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 30)}
+            ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 18)}
+            ${timerSettingRow('hold', 'Hold Time', s.hold !== undefined ? s.hold : 6)}
+            ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 60)}
           </div>
         </div>
 
