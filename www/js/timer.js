@@ -71,6 +71,52 @@ function _refreshTimerChips() {
     ? `via ${window._selectedHeatingSource}` : '';
 }
 
+function renderTimerHeatmap() {
+  const el = document.getElementById('timer-heatmap');
+  if (!el) return;
+
+  const sessions   = typeof getSessions === 'function' ? getSessions() : [];
+  const WEEKS      = 11;
+  const dayCounts  = {};
+  sessions.forEach(s => {
+    const key = new Date(s.ts).toDateString();
+    dayCounts[key] = (dayCounts[key] || 0) + 1;
+  });
+  const maxCount = Math.max(...Object.values(dayCounts), 1);
+
+  // Align to Monday of the week containing (WEEKS-1) weeks ago
+  const today      = new Date(); today.setHours(0,0,0,0);
+  const dow        = (today.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const startDate  = new Date(today);
+  startDate.setDate(today.getDate() - dow - (WEEKS - 1) * 7);
+
+  const cells = [];
+  for (let w = 0; w < WEEKS; w++) {
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + w * 7 + d);
+      const key    = date.toDateString();
+      const count  = dayCounts[key] || 0;
+      const future = date > today;
+      cells.push({ count, future });
+    }
+  }
+
+  el.style.cssText = `
+    display:grid;grid-template-columns:repeat(${WEEKS},8px);
+    grid-template-rows:repeat(7,8px);grid-auto-flow:column;
+    gap:2px;opacity:0.75;
+  `;
+  el.innerHTML = cells.map(({ count, future }) => {
+    if (future) return `<div style="width:8px;height:8px;border-radius:2px;"></div>`;
+    const alpha = count === 0 ? 0.07 : Math.max(0.25, count / maxCount);
+    const bg    = count === 0
+      ? `rgba(255,255,255,${alpha})`
+      : `rgba(46,204,138,${alpha.toFixed(2)})`;
+    return `<div style="width:8px;height:8px;border-radius:2px;background:${bg};"></div>`;
+  }).join('');
+}
+
 function initTimer() {
   const rb = document.getElementById('timer-reset-btn');
   if (rb && !rb.dataset.iconSet && typeof getIcon === 'function') {
@@ -82,6 +128,7 @@ function initTimer() {
     drawRingIdle();
     updateTimerDisplay('--:--');
     updatePhaseLabel('', '');
+    renderTimerHeatmap();
   }
   _refreshTimerChips();
 }
@@ -150,6 +197,11 @@ function cancelHold() {
   }
 }
 
+function _setHeatmapVisible(visible) {
+  const el = document.getElementById('timer-heatmap');
+  if (el) el.style.opacity = visible ? '0.75' : '0';
+}
+
 function startTimer() {
   const config  = window._timerConfig || { heat: 18, cool: 60 };
   _phases          = buildPhases(config);
@@ -157,6 +209,8 @@ function startTimer() {
   _phaseElapsed    = 0;
   _sessionStart    = Date.now();
   _timerState      = 'running';
+
+  _setHeatmapVisible(false);
 
   const btn      = document.getElementById('timer-start-btn');
   const resetBtn = document.getElementById('timer-reset-btn');
@@ -241,6 +295,8 @@ function resetTimer() {
   updatePhaseLabel('', '');
   drawRingIdle();
   hideSessionNotesPanel();
+  renderTimerHeatmap();
+  _setHeatmapVisible(true);
 }
 
 function completeSession() {
@@ -260,6 +316,7 @@ function completeSession() {
 
   if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
 
+  _setHeatmapVisible(true);
   showVaporRise();
 }
 

@@ -114,6 +114,14 @@
           color:var(--text-muted);opacity:0.5;letter-spacing:0.05em;
           font-family:'Space Mono',monospace;min-height:1rem;
         "></div>
+
+        <!-- Ad slot between controls and heatmap (free/demo builds only) -->
+        <div class="ad-slot timer-ad-slot" style="display:none;justify-content:center;margin-top:var(--sp-4);">
+          <div class="mantis-ad" data-size="banner"></div>
+        </div>
+
+        <!-- Activity heatmap — 10-week history, shown when idle/complete -->
+        <div id="timer-heatmap" style="margin-top:1rem;"></div>
       </div>
     </div>
     <div id="screen-stats" class="screen" role="main">

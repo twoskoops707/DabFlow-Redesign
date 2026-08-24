@@ -30,6 +30,37 @@ const CONCENTRATES = [
 
 const HEATING_SOURCES = ['Butane', 'Propane'];
 
+// ── XP + Rank ─────────────────────────────────────────────────────────────────
+const XP_RANKS = [
+  { name: 'Novice',      min: 0,    next: 50   },
+  { name: 'Dabber',      min: 50,   next: 150  },
+  { name: 'Artisan',     min: 150,  next: 400  },
+  { name: 'Connoisseur', min: 400,  next: 1000 },
+  { name: 'Legend',      min: 1000, next: null },
+];
+
+function calcXP(sessions) {
+  let xp = 0;
+  const seen = new Set();
+  [...sessions].sort((a, b) => a.ts - b.ts).forEach(s => {
+    xp += 10;
+    if (s.rating) xp += 5;
+    const c = s.concentrate || s.strain;
+    if (c && !seen.has(c)) { xp += 10; seen.add(c); }
+  });
+  xp += getStreak() * 3;
+  return xp;
+}
+
+function getRank(xp) {
+  for (let i = XP_RANKS.length - 1; i >= 0; i--) {
+    if (xp >= XP_RANKS[i].min) return XP_RANKS[i];
+  }
+  return XP_RANKS[0];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 let _homeMaterial      = 'Quartz';
 let _homeConcentrate   = 'Shatter';
 let _homeHeatingSource = 'Butane';
@@ -151,8 +182,11 @@ function selectHeatingSource(label) {
 }
 
 function renderHome() {
+  const sessions    = getSessions();
   const streak      = getStreak();
-  const lastSession = getSessions().slice(-1)[0];
+  const lastSession = sessions.slice(-1)[0];
+  const xp          = calcXP(sessions);
+  const rank        = getRank(xp);
   const el          = document.getElementById('screen-home');
   if (!el) return;
 
@@ -184,7 +218,15 @@ function renderHome() {
       <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-4);">
         <p class="font-body" style="font-size:var(--font-sm);color:var(--text-muted);">Good ${getTimeOfDay()}</p>
         <h1 class="font-display" style="font-size:var(--font-3xl);font-weight:700;color:var(--text-primary);line-height:1.1;">DabFlow</h1>
-        ${streak > 0 ? `<p class="font-mono" style="font-size:var(--font-sm);color:var(--accent);margin-top:var(--sp-2);">Day ${streak}</p>` : ''}
+        <div style="display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-2);flex-wrap:wrap;">
+          ${streak > 0 ? `<span class="font-mono" style="font-size:var(--font-xs);color:var(--accent);">🔥 Day ${streak}</span>` : ''}
+          <span style="
+            font-family:'Space Grotesk',sans-serif;font-size:var(--font-xs);font-weight:600;
+            color:var(--bg-base);background:var(--accent);
+            padding:2px 8px;border-radius:99px;letter-spacing:0.04em;
+          ">${rank.name}</span>
+          <span class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);">${xp} XP</span>
+        </div>
       </div>
 
       ${lastSessionHTML}

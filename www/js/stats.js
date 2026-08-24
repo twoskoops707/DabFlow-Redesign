@@ -2,6 +2,11 @@
 
 let _chartInstances = {};
 
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function renderStats() {
   const sessions = getSessions();
   const el = document.getElementById('stats-content');
@@ -11,16 +16,52 @@ function renderStats() {
   _chartInstances = {};
 
   const streak     = getStreak();
-  const totalTime  = sessions.reduce((t, s) => t + (s.heat||0) + (s.hold||0) + (s.cool||0), 0);
+  const totalTime  = sessions.reduce((t, s) => t + (s.heat||0) + (s.cool||0), 0);
   const bestStreak = calcBestStreak(sessions);
   const hasBrand   = sessions.some(s => s.brand);
   const hasStrain  = sessions.some(s => s.strain);
 
+  // XP / rank (functions live in app.js)
+  const xp   = typeof calcXP   === 'function' ? calcXP(sessions)   : 0;
+  const rank = typeof getRank  === 'function' ? getRank(xp)        : { name: 'Novice', min: 0, next: 50 };
+  const xpToNext   = rank.next !== null ? rank.next - rank.min : null;
+  const xpInRank   = xp - rank.min;
+  const xpPct      = xpToNext ? Math.min(100, Math.round((xpInRank / xpToNext) * 100)) : 100;
+  const nextRankName = rank.next !== null
+    ? (typeof XP_RANKS !== 'undefined' ? (XP_RANKS.find(r => r.min === rank.next) || {}).name || '' : '') : '';
+
   el.innerHTML = `
     <div style="padding-top:var(--sp-6);">
-      <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-6);">Stats</h1>
+      <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-5);">Stats</h1>
 
-      <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-6);">
+      <!-- XP / Rank card -->
+      <div class="card fade-up" style="margin-bottom:var(--sp-5);border-color:rgba(46,204,138,0.25);">
+        <div class="card-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3);">
+            <div>
+              <span style="
+                font-family:'Space Grotesk',sans-serif;font-size:var(--font-xs);font-weight:700;
+                color:var(--bg-base);background:var(--accent);padding:2px 10px;border-radius:99px;
+              ">${rank.name}</span>
+            </div>
+            <span class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);">
+              ${xp} XP${rank.next !== null ? ` · ${rank.next - xp} to ${nextRankName}` : ' · MAX'}
+            </span>
+          </div>
+          <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden;">
+            <div style="height:100%;width:${xpPct}%;background:var(--accent);border-radius:3px;transition:width 0.6s ease;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:var(--sp-2);">
+            ${['Novice','Dabber','Artisan','Connoisseur','Legend'].map((r,i) => `
+              <span style="font-family:'Space Mono',monospace;font-size:0.5rem;
+                color:${r === rank.name ? 'var(--accent)' : 'rgba(255,255,255,0.2)'};">${r[0]}</span>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary chips -->
+      <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5);">
         ${statChip(sessions.length,            'Sessions',    'chip-sessions')}
         ${statChip(formatTotalTime(totalTime), 'Total Time')}
         ${statChip(streak,                     'Streak',      'chip-streak')}
@@ -288,27 +329,58 @@ function renderStrainChart(sessions) {
 }
 
 function renderRecentSessions(sessions) {
-  return sessions.slice(-10).reverse().map(s => {
-    const hasMeta = s.brand || s.strain;
-    const meta    = [s.brand, s.strain].filter(Boolean).join(' · ');
-    return `<div class="card" style="margin-bottom:var(--sp-3);">
-      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);">
-        <div style="flex:1;min-width:0;">
-          <div class="font-display" style="font-size:var(--font-sm);color:var(--text-primary);">${s.material || 'Session'}</div>
-          <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            ${hasMeta ? meta : formatRelTime(s.ts)}
+  const recent = sessions.slice(-12).reverse();
+  if (!recent.length) return '';
+
+  return `<div style="position:relative;">
+    <!-- Timeline spine -->
+    <div style="position:absolute;left:18px;top:8px;bottom:8px;width:1px;background:rgba(255,255,255,0.07);"></div>
+
+    ${recent.map((s, i) => {
+      const hasMeta    = s.brand || s.strain || s.concentrate;
+      const concentrate = escHtml(s.concentrate || s.strain || '');
+      const brand       = escHtml(s.brand || '');
+      const ratingDots  = s.rating
+        ? Array(5).fill(0).map((_, n) => `<span style="width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:2px;background:${n < s.rating ? 'var(--accent)' : 'rgba(255,255,255,0.12)'};"></span>`).join('')
+        : '';
+      const materialColors = { Quartz: '#5B9CF6', Titanium: '#8A9BAE', Ceramic: '#F5A623' };
+      const dotColor = materialColors[s.material] || 'var(--accent)';
+
+      return `<div style="display:flex;align-items:flex-start;gap:var(--sp-3);margin-bottom:var(--sp-3);">
+        <!-- Timeline dot -->
+        <div style="
+          width:10px;height:10px;border-radius:50%;
+          background:${dotColor};flex-shrink:0;margin-top:14px;
+          position:relative;z-index:1;box-shadow:0 0 6px ${dotColor}80;
+        "></div>
+
+        <!-- Card -->
+        <div class="card" style="flex:1;min-width:0;">
+          <div class="card-body" style="padding:var(--sp-3) var(--sp-4);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:${hasMeta ? 'var(--sp-2)' : '0'};">
+              <div style="display:flex;align-items:center;gap:var(--sp-2);min-width:0;flex:1;">
+                <span class="font-display" style="font-size:var(--font-sm);color:var(--text-primary);white-space:nowrap;">${s.material || 'Session'}</span>
+                ${concentrate ? `<span style="
+                  font-family:'Space Mono',monospace;font-size:0.58rem;
+                  padding:1px 6px;border-radius:99px;
+                  background:rgba(255,255,255,0.06);border:1px solid var(--border);
+                  color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;
+                ">${concentrate}</span>` : ''}
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;">
+                ${ratingDots ? `<div style="display:flex;align-items:center;">${ratingDots}</div>` : ''}
+                <button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px;-webkit-tap-highlight-color:transparent;opacity:0.6;" onpointerdown="editSessionByTs(${s.ts})">${getIcon('edit', 13)}</button>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              ${brand ? `<span class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${brand}</span>` : `<span></span>`}
+              <span class="font-mono" style="font-size:0.58rem;color:rgba(255,255,255,0.2);white-space:nowrap;">${formatRelTime(s.ts)}</span>
+            </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0;">
-          ${s.rating ? `<span style="font-size:var(--font-sm);color:var(--accent);">${'★'.repeat(s.rating)}</span>` : ''}
-          ${!hasMeta
-            ? `<button class="btn-ghost" style="padding:var(--sp-2) var(--sp-3);font-size:var(--font-xs);" onpointerdown="editSessionByTs(${s.ts})">Add Notes</button>`
-            : `<button style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:var(--sp-2);-webkit-tap-highlight-color:transparent;" onpointerdown="editSessionByTs(${s.ts})">${getIcon('edit', 14)}</button>`
-          }
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderAchievements(sessions) {
