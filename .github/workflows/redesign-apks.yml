@@ -87,6 +87,38 @@ jobs:
       - name: Sync web assets to Android
         run: npx cap sync android
 
+      - name: Customize app name and icon per variant
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          if [ "$VARIANT" = "demo" ]; then
+            APP_NAME="DabFlow Demo"; COLOR="#F59E0B"
+          elif [ "$VARIANT" = "premium" ]; then
+            APP_NAME="DabFlow Pro"; COLOR="#A78BFA"
+          else
+            APP_NAME="DabFlow"; COLOR="#2ECC8A"
+          fi
+
+          # Update launcher label in strings.xml
+          sed -i "s|<string name=\"app_name\">.*</string>|<string name=\"app_name\">${APP_NAME}</string>|" \
+            android/app/src/main/res/values/strings.xml
+
+          # Generate solid-color launcher icons (distinguishable at a glance)
+          for cfg in "mdpi:48" "hdpi:72" "xhdpi:96" "xxhdpi:144" "xxxhdpi:192"; do
+            DENSITY="${cfg%%:*}"; SIZE="${cfg##*:}"
+            DIR="android/app/src/main/res/mipmap-${DENSITY}"
+            mkdir -p "$DIR"
+            convert -size "${SIZE}x${SIZE}" xc:"#080A0C" \
+              -fill "$COLOR" \
+              -draw "roundrectangle 4,4 $((SIZE-5)),$((SIZE-5)) $((SIZE/5)),$((SIZE/5))" \
+              "$DIR/ic_launcher.png"
+            cp "$DIR/ic_launcher.png" "$DIR/ic_launcher_round.png"
+            # Overwrite adaptive icon layers if they exist
+            [ -f "$DIR/ic_launcher_foreground.png" ] && \
+              convert -size "${SIZE}x${SIZE}" xc:"$COLOR" "$DIR/ic_launcher_foreground.png"
+          done
+          echo "App name: $APP_NAME | Icon color: $COLOR"
+
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
