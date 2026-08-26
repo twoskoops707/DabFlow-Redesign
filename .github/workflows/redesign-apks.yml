@@ -87,6 +87,9 @@ jobs:
       - name: Sync web assets to Android
         run: npx cap sync android
 
+      - name: Install ImageMagick
+        run: sudo apt-get install -y imagemagick
+
       - name: Customize app name and icon per variant
         env:
           VARIANT: ${{ matrix.variant }}
