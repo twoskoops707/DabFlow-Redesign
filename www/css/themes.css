@@ -1,20 +1,57 @@
 /* ── DabFlow Theme Overrides ──────────────────────────────────────────────── */
-/* Applied via data-theme attribute on <html>. Base tokens live in design.css. */
+/* Applied via data-theme on <html>. Base tokens live in design.css.          */
+/* Each theme changes: colors, border-radius, fonts, card shadows, backgrounds */
 
-/* ── Default (always unlocked) — no overrides needed, uses base tokens ── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* DEFAULT — base tokens only, no overrides needed                            */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Kush (1st session) ── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* KUSH — earthy green, organic, round corners                                */
+/* Unlock: 1st session                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="kush"] {
-  --bg-base:      #061209;
-  --bg-surface:   #0C1F12;
-  --bg-elevated:  #132819;
-  --accent:       #4ADE80;
-  --arc-cool:     #4ADE80;
-  --text-primary: #E8F5E9;
-  --border:       rgba(74,222,128,0.12);
+  --bg-base:       #061209;
+  --bg-surface:    #0C1F12;
+  --bg-elevated:   #132819;
+  --accent:        #4ADE80;
+  --arc-cool:      #86EFAC;
+  --text-primary:  #E8F5E9;
+  --text-secondary:#7DBF8A;
+  --text-muted:    #3D6B47;
+  --border:        rgba(74,222,128,0.13);
+  /* Rounder — organic feel */
+  --r-sm:  8px;
+  --r-md:  16px;
+  --r-lg:  20px;
+  --r-xl:  28px;
 }
 
-/* ── Terminal (10 sessions) ── */
+[data-theme="kush"] .card {
+  box-shadow: 0 2px 16px rgba(74,222,128,0.06);
+}
+
+[data-theme="kush"] .pill-nav {
+  background: #0C1F12;
+  border: 1px solid rgba(74,222,128,0.15);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 12px rgba(74,222,128,0.08);
+}
+
+/* Subtle leaf-vein texture overlay */
+[data-theme="kush"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 80%, rgba(74,222,128,0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(74,222,128,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* TERMINAL — CRT green phosphor, monospace everything, sharp corners         */
+/* Unlock: 10 sessions                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="terminal"] {
   --bg-base:       #000800;
   --bg-surface:    #001200;
@@ -23,11 +60,38 @@
   --arc-cool:      #00FF41;
   --text-primary:  #00FF41;
   --text-secondary:rgba(0,255,65,0.7);
-  --text-muted:    rgba(0,255,65,0.4);
+  --text-muted:    rgba(0,255,65,0.35);
   --border:        rgba(0,255,65,0.15);
+  /* Sharp — terminal block corners */
+  --r-sm:  2px;
+  --r-md:  4px;
+  --r-lg:  6px;
+  --r-xl:  8px;
+  --r-full:4px;
 }
 
-/* Terminal scanline overlay */
+[data-theme="terminal"] .card {
+  box-shadow: 0 0 0 1px rgba(0,255,65,0.12), inset 0 0 20px rgba(0,255,65,0.02);
+}
+
+[data-theme="terminal"] .pill-nav {
+  background: #001200;
+  border-radius: 4px;
+  border: 1px solid rgba(0,255,65,0.2);
+  box-shadow: 0 0 16px rgba(0,255,65,0.15);
+}
+
+/* Share Tech Mono throughout */
+[data-theme="terminal"] body,
+[data-theme="terminal"] .font-display,
+[data-theme="terminal"] .font-mono,
+[data-theme="terminal"] .font-body,
+[data-theme="terminal"] button,
+[data-theme="terminal"] input {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* CRT scanline overlay */
 [data-theme="terminal"] body::before {
   content: '';
   position: fixed;
@@ -36,97 +100,290 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(0,0,0,0.15) 2px,
-    rgba(0,0,0,0.15) 4px
+    rgba(0,0,0,0.18) 2px,
+    rgba(0,0,0,0.18) 4px
   );
   pointer-events: none;
   z-index: 1;
 }
+
+/* Cursor blink on timer display */
+[data-theme="terminal"] #timer-display::after {
+  content: '_';
+  animation: term-blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes term-blink { 50% { opacity: 0; } }
 
 /* Lift arc + controls above scanline overlay */
 [data-theme="terminal"] #timer-ring-wrap,
 [data-theme="terminal"] #timer-chips,
 [data-theme="terminal"] #timer-fuel-label,
 [data-theme="terminal"] #timer-controls,
-[data-theme="terminal"] #timer-phase-label {
+[data-theme="terminal"] #timer-phase-label,
+[data-theme="terminal"] #timer-heatmap,
+[data-theme="terminal"] .pill-nav {
   position: relative;
   z-index: 2;
 }
 
-/* Share Tech Mono throughout Terminal theme */
-[data-theme="terminal"] body,
-[data-theme="terminal"] .font-display,
-[data-theme="terminal"] .font-mono {
-  font-family: 'Share Tech Mono', monospace;
-}
-
-/* ── Bond (7-day streak) ── */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* BOND — midnight silver, elegant serif, luxe                                */
+/* Unlock: 7-day streak                                                       */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="bond"] {
-  --bg-base:      #0B0B14;
-  --bg-surface:   #111120;
-  --bg-elevated:  #1A1A2E;
-  --accent:       #A0A0C8;
-  --arc-cool:     #A0A0C8;
-  --text-primary: #E8E8F5;
-  --border:       rgba(160,160,200,0.12);
+  --bg-base:       #0B0B14;
+  --bg-surface:    #111120;
+  --bg-elevated:   #1A1A2E;
+  --accent:        #C8C8E8;
+  --arc-cool:      #A0A0C8;
+  --text-primary:  #E8E8F5;
+  --text-secondary:#8888B0;
+  --text-muted:    #44446A;
+  --border:        rgba(160,160,200,0.13);
+  /* Slightly squared — refined, not bubbly */
+  --r-sm:  5px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
 }
 
-/* Cinzel serif for Bond display text */
+[data-theme="bond"] .card {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+[data-theme="bond"] .pill-nav {
+  background: linear-gradient(135deg, #111120, #1A1A2E);
+  border: 1px solid rgba(160,160,200,0.18);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.05) inset;
+}
+
+/* Cinzel serif for display text */
 [data-theme="bond"] .font-display,
 [data-theme="bond"] h1,
 [data-theme="bond"] h2 {
   font-family: 'Cinzel', serif;
+  letter-spacing: 0.04em;
 }
 
-/* ── Cyberpunk (30 sessions) ── */
+/* Subtle marble radial gradient */
+[data-theme="bond"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(160,160,200,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* CYBERPUNK — neon cyan on near-black, sharp corners, glowing borders        */
+/* Unlock: 30 sessions                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="cyberpunk"] {
-  --bg-base:      #030612;
-  --bg-surface:   #06091E;
-  --bg-elevated:  #0A0E2A;
-  --accent:       #00FFFF;
-  --arc-cool:     #00FFFF;
-  --text-primary: #E0F7FA;
-  --border:       rgba(0,255,255,0.12);
+  --bg-base:       #030612;
+  --bg-surface:    #06091E;
+  --bg-elevated:   #0A0E2A;
+  --accent:        #00FFFF;
+  --arc-cool:      #00FFFF;
+  --text-primary:  #E0F7FA;
+  --text-secondary:#4DD0E1;
+  --text-muted:    #1A5560;
+  --border:        rgba(0,255,255,0.14);
+  /* Sharp with slight bevel */
+  --r-sm:  3px;
+  --r-md:  6px;
+  --r-lg:  10px;
+  --r-xl:  14px;
 }
 
-/* ── Steampunk (50 sessions) ── */
+[data-theme="cyberpunk"] .card {
+  box-shadow: 0 0 0 1px rgba(0,255,255,0.1), 0 4px 20px rgba(0,255,255,0.05);
+}
+
+[data-theme="cyberpunk"] .pill-nav {
+  background: #06091E;
+  border: 1px solid rgba(0,255,255,0.2);
+  box-shadow: 0 0 20px rgba(0,255,255,0.12), 0 4px 32px rgba(0,0,0,0.6);
+}
+
+/* Monospace for mono elements */
+[data-theme="cyberpunk"] .font-mono {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Horizontal scan + grid overlay */
+[data-theme="cyberpunk"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg,   transparent, transparent 40px, rgba(0,255,255,0.015) 40px, rgba(0,255,255,0.015) 41px),
+    repeating-linear-gradient(90deg,  transparent, transparent 40px, rgba(0,255,255,0.01)  40px, rgba(0,255,255,0.01)  41px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="cyberpunk"] #timer-ring-wrap,
+[data-theme="cyberpunk"] #timer-chips,
+[data-theme="cyberpunk"] #timer-controls,
+[data-theme="cyberpunk"] #timer-phase-label,
+[data-theme="cyberpunk"] #timer-heatmap,
+[data-theme="cyberpunk"] .pill-nav {
+  position: relative;
+  z-index: 2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* STEAMPUNK — amber brass on dark sepia, Victorian, warm medium radii        */
+/* Unlock: 50 sessions                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="steampunk"] {
-  --bg-base:      #120A03;
-  --bg-surface:   #1E1208;
-  --bg-elevated:  #2A1A0C;
-  --accent:       #E8B84B;
-  --arc-cool:     #E8B84B;
-  --text-primary: #F5E6C8;
-  --border:       rgba(232,184,75,0.15);
+  --bg-base:       #120A03;
+  --bg-surface:    #1E1208;
+  --bg-elevated:   #2A1A0C;
+  --accent:        #E8B84B;
+  --arc-cool:      #D4A130;
+  --text-primary:  #F5E6C8;
+  --text-secondary:#B89450;
+  --text-muted:    #6B5030;
+  --border:        rgba(232,184,75,0.16);
+  /* Medium organic — Victorian aged feel */
+  --r-sm:  6px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  22px;
 }
 
-/* ── Tie Dye (75 sessions) ── */
+[data-theme="steampunk"] .card {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(232,184,75,0.08) inset;
+  background: linear-gradient(135deg, #1E1208, #241508);
+}
+
+[data-theme="steampunk"] .pill-nav {
+  background: linear-gradient(135deg, #1E1208, #2A1A0C);
+  border: 1px solid rgba(232,184,75,0.22);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.7), 0 0 12px rgba(232,184,75,0.1);
+}
+
+/* Crosshatch gear-grid overlay */
+[data-theme="steampunk"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg,  transparent, transparent 24px, rgba(232,184,75,0.018) 24px, rgba(232,184,75,0.018) 25px),
+    repeating-linear-gradient(-45deg, transparent, transparent 24px, rgba(232,184,75,0.012) 24px, rgba(232,184,75,0.012) 25px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* TIE DYE — rainbow psychedelic, very round, hue-rotating arcs              */
+/* Unlock: 75 sessions                                                        */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="tie-dye"] {
-  --bg-base:      #0A0612;
-  --bg-surface:   #130A1E;
-  --bg-elevated:  #1C1028;
-  --accent:       #FF6B6B;
-  --arc-cool:     #FF6B6B;
-  --border:       rgba(255,107,107,0.15);
+  --bg-base:       #0A0612;
+  --bg-surface:    #130A1E;
+  --bg-elevated:   #1C1028;
+  --accent:        #FF6B6B;
+  --arc-cool:      #FF6B6B;
+  --text-primary:  #FFF0FF;
+  --text-secondary:#CC88CC;
+  --text-muted:    #664466;
+  --border:        rgba(255,107,107,0.16);
+  /* Very round — bubbly, fun */
+  --r-sm:  10px;
+  --r-md:  20px;
+  --r-lg:  26px;
+  --r-xl:  36px;
 }
 
-/* Rainbow hue-rotate on the cool arc progress circle */
+[data-theme="tie-dye"] .card {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  animation: tie-dye-border 6s linear infinite;
+}
+@keyframes tie-dye-border {
+  0%   { border-color: rgba(255,107,107,0.2); }
+  25%  { border-color: rgba(107,255,200,0.2); }
+  50%  { border-color: rgba(107,107,255,0.2); }
+  75%  { border-color: rgba(255,220,107,0.2); }
+  100% { border-color: rgba(255,107,107,0.2); }
+}
+
+[data-theme="tie-dye"] .pill-nav {
+  background: #130A1E;
+  border: 1px solid rgba(255,107,107,0.2);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.6), 0 0 20px rgba(255,107,107,0.1);
+}
+
+/* Rainbow arc */
 [data-theme="tie-dye"] .arc-progress {
-  stroke: #FF6B6B;
-  animation: tie-dye-arc 4s linear infinite;
+  animation: tie-dye-arc 3s linear infinite;
 }
-
 @keyframes tie-dye-arc {
   to { filter: hue-rotate(360deg); }
 }
 
-/* ── Sugar Skull (100 sessions) ── */
+/* Soft radial rainbow glow */
+[data-theme="tie-dye"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(255,100,100,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(100,100,255,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 20%, rgba(100,255,180,0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* SUGAR SKULL — magenta + cyan, day of the dead, bold contrast               */
+/* Unlock: 100 sessions                                                       */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 [data-theme="sugar-skull"] {
-  --bg-base:      #06000A;
-  --bg-surface:   #100015;
-  --bg-elevated:  #1C0022;
-  --accent:       #E91E8C;
-  --arc-cool:     #00BCD4;
-  --text-primary: #F3E5F5;
-  --border:       rgba(233,30,140,0.15);
+  --bg-base:       #06000A;
+  --bg-surface:    #100015;
+  --bg-elevated:   #1C0022;
+  --accent:        #E91E8C;
+  --arc-cool:      #00BCD4;
+  --text-primary:  #F3E5F5;
+  --text-secondary:#CC66AA;
+  --text-muted:    #663355;
+  --border:        rgba(233,30,140,0.16);
+  /* Medium-sharp — ornate but structured */
+  --r-sm:  5px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
+}
+
+[data-theme="sugar-skull"] .card {
+  box-shadow: 0 0 0 1px rgba(233,30,140,0.08), 0 4px 20px rgba(0,0,0,0.7);
+}
+
+[data-theme="sugar-skull"] .pill-nav {
+  background: #100015;
+  border: 1px solid rgba(233,30,140,0.22);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 16px rgba(233,30,140,0.12);
+}
+
+/* Cinzel for display text — ornate Day of the Dead feel */
+[data-theme="sugar-skull"] .font-display,
+[data-theme="sugar-skull"] h1,
+[data-theme="sugar-skull"] h2 {
+  font-family: 'Cinzel', serif;
+}
+
+/* Diagonal decorative lines overlay */
+[data-theme="sugar-skull"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(233,30,140,0.05) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(233,30,140,0.02) 30px, rgba(233,30,140,0.02) 31px);
+  pointer-events: none;
+  z-index: 0;
 }
