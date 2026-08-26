@@ -396,6 +396,25 @@ function timerSettingRow(key, label, value) {
   </div>`;
 }
 
+function colorSettingRow(key, label, value) {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${label}</div>
+      <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);">arc color</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:var(--sp-2);cursor:pointer;">
+      <span id="color-swatch-${key}" style="
+        width:36px;height:36px;border-radius:var(--r-sm);
+        background:${value};border:1px solid var(--border);
+        display:block;flex-shrink:0;pointer-events:none;
+      "></span>
+      <input type="color" value="${value}"
+        oninput="saveSetting('${key}',this.value);document.getElementById('color-swatch-${key}').style.background=this.value;"
+        style="width:0;height:0;opacity:0;position:absolute;">
+    </label>
+  </div>`;
+}
+
 function toggleRow(key, label, value) {
   return `<div style="display:flex;align-items:center;justify-content:space-between;">
     <span class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${label}</span>
@@ -455,11 +474,11 @@ function renderSettings() {
 
         ${themePickerHTML()}
 
-        <p class="section-title">Timer</p>
+        <p class="section-title">Timer Colors</p>
         <div class="card" style="margin-bottom:var(--sp-4);">
           <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
-            ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 18)}
-            ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 60)}
+            ${colorSettingRow('heatColor', 'Heat Phase', s.heatColor || '#EF4444')}
+            ${colorSettingRow('coolColor', 'Cool Phase', s.coolColor || '#5B9CF6')}
           </div>
         </div>
 

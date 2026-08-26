@@ -31,14 +31,20 @@ function _getArcProgress() {
   return document.querySelector('.arc-progress');
 }
 
+function _getHeatColor() {
+  const s = typeof getSettings === 'function' ? getSettings() : {};
+  return s.heatColor || '#EF4444';
+}
+
 function _getCoolColor() {
+  const s = typeof getSettings === 'function' ? getSettings() : {};
+  if (s.coolColor) return s.coolColor;
   return getComputedStyle(document.documentElement)
     .getPropertyValue('--arc-cool').trim() || '#5B9CF6';
 }
 
 function _getPhaseColor(phaseName) {
-  if (phaseName === 'heat') return PHASE_COLORS.heat;
-  if (phaseName === 'hold') return PHASE_COLORS.hold;
+  if (phaseName === 'heat') return _getHeatColor();
   return _getCoolColor();
 }
 
@@ -46,7 +52,7 @@ function drawRingIdle() {
   const arc = _getArcProgress();
   if (arc) {
     arc.setAttribute('stroke-dasharray', `0 ${ARC_CIRC}`);
-    arc.setAttribute('stroke', PHASE_COLORS.heat);
+    arc.setAttribute('stroke', _getHeatColor());
   }
 }
 
@@ -190,7 +196,7 @@ function updatePhaseLabel(text, phaseName) {
   const el = document.getElementById('timer-phase-label');
   if (!el) return;
   el.textContent = text;
-  if (phaseName === 'heat')      el.style.color = PHASE_COLORS.heat;
+  if (phaseName === 'heat')      el.style.color = _getHeatColor();
   else if (phaseName === 'cool') el.style.color = _getCoolColor();
   else                           el.style.color = '';
 }
