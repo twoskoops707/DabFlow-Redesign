@@ -21,44 +21,9 @@ function renderStats() {
   const hasBrand   = sessions.some(s => s.brand);
   const hasStrain  = sessions.some(s => s.strain);
 
-  // XP / rank (functions live in app.js)
-  const xp   = typeof calcXP   === 'function' ? calcXP(sessions)   : 0;
-  const rank = typeof getRank  === 'function' ? getRank(xp)        : { name: 'Novice', min: 0, next: 50 };
-  const xpToNext   = rank.next !== null ? rank.next - rank.min : null;
-  const xpInRank   = xp - rank.min;
-  const xpPct      = xpToNext ? Math.min(100, Math.round((xpInRank / xpToNext) * 100)) : 100;
-  const nextRankName = rank.next !== null
-    ? (typeof XP_RANKS !== 'undefined' ? (XP_RANKS.find(r => r.min === rank.next) || {}).name || '' : '') : '';
-
   el.innerHTML = `
     <div style="padding-top:var(--sp-6);">
       <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-5);">Stats</h1>
-
-      <!-- XP / Rank card -->
-      <div class="card fade-up" style="margin-bottom:var(--sp-5);border-color:rgba(46,204,138,0.25);">
-        <div class="card-body">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3);">
-            <div>
-              <span style="
-                font-family:'Space Grotesk',sans-serif;font-size:var(--font-xs);font-weight:700;
-                color:var(--bg-base);background:var(--accent);padding:2px 10px;border-radius:99px;
-              ">${rank.name}</span>
-            </div>
-            <span class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);">
-              ${xp} XP${rank.next !== null ? ` · ${rank.next - xp} to ${nextRankName}` : ' · MAX'}
-            </span>
-          </div>
-          <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden;">
-            <div style="height:100%;width:${xpPct}%;background:var(--accent);border-radius:3px;transition:width 0.6s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:var(--sp-2);">
-            ${['Novice','Dabber','Artisan','Connoisseur','Legend'].map((r,i) => `
-              <span style="font-family:'Space Mono',monospace;font-size:0.5rem;
-                color:${r === rank.name ? 'var(--accent)' : 'rgba(255,255,255,0.2)'};">${r[0]}</span>
-            `).join('')}
-          </div>
-        </div>
-      </div>
 
       <!-- Summary chips -->
       <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5);">
@@ -67,6 +32,22 @@ function renderStats() {
         ${statChip(streak,                     'Streak',      'chip-streak')}
         ${statChip(bestStreak,                 'Best Streak', 'chip-best')}
       </div>
+
+      ${hasBrand ? `
+      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
+        <div class="card-body">
+          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Brands</p>
+          <div style="position:relative;height:160px;"><canvas id="chart-brand"></canvas></div>
+        </div>
+      </div>` : ''}
+
+      ${hasStrain ? `
+      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
+        <div class="card-body">
+          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Strains</p>
+          <div style="position:relative;height:180px;"><canvas id="chart-strain"></canvas></div>
+        </div>
+      </div>` : ''}
 
       <div class="card fade-up" style="margin-bottom:var(--sp-4);">
         <div class="card-body">
@@ -92,23 +73,7 @@ function renderStats() {
         </div>
       </div>
 
-      ${hasBrand ? `
-      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
-        <div class="card-body">
-          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Brands</p>
-          <div style="position:relative;height:160px;"><canvas id="chart-brand"></canvas></div>
-        </div>
-      </div>` : ''}
-
-      ${hasStrain ? `
-      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
-        <div class="card-body">
-          <p class="section-title" style="margin-bottom:var(--sp-4);">Top Strains</p>
-          <div style="position:relative;height:180px;"><canvas id="chart-strain"></canvas></div>
-        </div>
-      </div>` : ''}
-
-      <div class="card fade-up" style="margin-bottom:var(--sp-4);">
+      <div class="card fade-up" style="margin-bottom:var(--sp-8);">
         <div class="card-body">
           <p class="section-title">Achievements</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);">
@@ -116,12 +81,6 @@ function renderStats() {
           </div>
         </div>
       </div>
-
-      ${sessions.length ? `
-      <div class="fade-up" style="margin-bottom:var(--sp-8);">
-        <p class="section-title" style="margin-bottom:var(--sp-4);">Recent Sessions</p>
-        ${renderRecentSessions(sessions)}
-      </div>` : ''}
     </div>`;
 
   if (typeof staggerCards === 'function') staggerCards(el);
@@ -129,11 +88,11 @@ function renderStats() {
   if (streak >= 7) showToast("you've been consistent");
 
   requestAnimationFrame(() => {
+    if (hasBrand)  renderBrandChart(sessions);
+    if (hasStrain) renderStrainChart(sessions);
     renderSessionsChart(sessions);
     renderHourChart(sessions);
     renderMaterialChart(sessions);
-    if (hasBrand)  renderBrandChart(sessions);
-    if (hasStrain) renderStrainChart(sessions);
     animateStatChips(sessions.length, streak, bestStreak);
   });
 }
@@ -329,7 +288,7 @@ function renderStrainChart(sessions) {
 }
 
 function renderRecentSessions(sessions) {
-  const recent = sessions.slice(-12).reverse();
+  const recent = sessions;
   if (!recent.length) return '';
 
   return `<div style="position:relative;">
@@ -431,6 +390,25 @@ function renderAchievements(sessions) {
   }
 
   return achHTML + themeHTML;
+}
+
+function renderSessionsScreen() {
+  const el = document.getElementById('screen-sessions');
+  if (!el) return;
+  const sessions = getSessions().slice().reverse();
+
+  el.innerHTML = `
+    <div class="screen-inner">
+      <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-5);">
+        <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;">Sessions</h1>
+        ${sessions.length ? `<p class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:var(--sp-1);">${sessions.length} total</p>` : ''}
+      </div>
+      ${sessions.length ? renderRecentSessions(sessions) : `
+        <div style="text-align:center;padding:var(--sp-10) 0;color:var(--text-muted);">
+          <p class="font-display" style="font-size:var(--font-lg);">No sessions yet</p>
+          <p class="font-body" style="font-size:var(--font-sm);margin-top:var(--sp-2);">Start a session to see it here</p>
+        </div>`}
+    </div>`;
 }
 
 function showToast(msg) {

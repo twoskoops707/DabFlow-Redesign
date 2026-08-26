@@ -1,6 +1,6 @@
 'use strict';
 
-const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings'];
+const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings', 'sessions'];
 let currentScreen = 'home';
 
 const MATERIAL_PRESETS = [
@@ -29,35 +29,6 @@ const CONCENTRATES = [
 ];
 
 const HEATING_SOURCES = ['Butane', 'Propane'];
-
-// ── XP + Rank ─────────────────────────────────────────────────────────────────
-const XP_RANKS = [
-  { name: 'Novice',      min: 0,    next: 50   },
-  { name: 'Dabber',      min: 50,   next: 150  },
-  { name: 'Artisan',     min: 150,  next: 400  },
-  { name: 'Connoisseur', min: 400,  next: 1000 },
-  { name: 'Legend',      min: 1000, next: null },
-];
-
-function calcXP(sessions) {
-  let xp = 0;
-  const seen = new Set();
-  [...sessions].sort((a, b) => a.ts - b.ts).forEach(s => {
-    xp += 10;
-    if (s.rating) xp += 5;
-    const c = s.concentrate || s.strain;
-    if (c && !seen.has(c)) { xp += 10; seen.add(c); }
-  });
-  xp += getStreak() * 3;
-  return xp;
-}
-
-function getRank(xp) {
-  for (let i = XP_RANKS.length - 1; i >= 0; i--) {
-    if (xp >= XP_RANKS[i].min) return XP_RANKS[i];
-  }
-  return XP_RANKS[0];
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -97,8 +68,9 @@ function switchScreen(name) {
     }
   });
 
-  if (name === 'timer') setTimeout(initTimer, 50);
-  if (name === 'stats')  setTimeout(renderStats, 50);
+  if (name === 'timer')    setTimeout(initTimer, 50);
+  if (name === 'stats')    setTimeout(renderStats, 50);
+  if (name === 'sessions') setTimeout(renderSessionsScreen, 50);
 }
 
 function initNav() {
@@ -162,8 +134,8 @@ function startSession() {
   window._selectedConcentrate   = _homeConcentrate;
   window._selectedHeatingSource = _homeHeatingSource;
   window._timerConfig           = calcTimerConfig();
+  window._autoStartTimer        = true;
   switchScreen('timer');
-  setTimeout(initTimer, 50);
 }
 
 function selectMaterial(label) {
@@ -185,8 +157,6 @@ function renderHome() {
   const sessions    = getSessions();
   const streak      = getStreak();
   const lastSession = sessions.slice(-1)[0];
-  const xp          = calcXP(sessions);
-  const rank        = getRank(xp);
   const el          = document.getElementById('screen-home');
   if (!el) return;
 
@@ -218,41 +188,29 @@ function renderHome() {
       <div style="padding-top:var(--sp-6);margin-bottom:var(--sp-4);">
         <p class="font-body" style="font-size:var(--font-sm);color:var(--text-muted);">Good ${getTimeOfDay()}</p>
         <h1 class="font-display" style="font-size:var(--font-3xl);font-weight:700;color:var(--text-primary);line-height:1.1;">DabFlow</h1>
-        <div style="display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-2);flex-wrap:wrap;">
-          ${streak > 0 ? `<span class="font-mono" style="font-size:var(--font-xs);color:var(--accent);">🔥 Day ${streak}</span>` : ''}
-          <span style="
-            font-family:'Space Grotesk',sans-serif;font-size:var(--font-xs);font-weight:600;
-            color:var(--bg-base);background:var(--accent);
-            padding:2px 8px;border-radius:99px;letter-spacing:0.04em;
-          ">${rank.name}</span>
-          <span class="font-mono" style="font-size:var(--font-xs);color:var(--text-muted);">${xp} XP</span>
-        </div>
+        ${streak > 0 ? `<div style="margin-top:var(--sp-2);"><span class="font-mono" style="font-size:var(--font-xs);color:var(--accent);">🔥 Day ${streak}</span></div>` : ''}
       </div>
-
-      ${lastSessionHTML}
 
       <!-- Material selector -->
       <p class="section-title" style="margin-bottom:var(--sp-3);">Material</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-bottom:var(--sp-5);">
         ${MATERIAL_PRESETS.map(p => `
           <button onpointerdown="selectMaterial('${p.label}')"
             style="
-              padding:var(--sp-3) var(--sp-2);border-radius:var(--r-md);
+              padding:var(--sp-4) var(--sp-2);border-radius:var(--r-md);
               border:1px solid ${_homeMaterial === p.label ? 'var(--accent)' : 'var(--border)'};
               background:${_homeMaterial === p.label ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
               color:${_homeMaterial === p.label ? 'var(--accent)' : 'var(--text-secondary)'};
-              font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:600;
+              font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600;
               cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;
-              display:flex;flex-direction:column;align-items:center;gap:2px;
             ">
-            <span>${p.label}</span>
-            <span style="font-family:'Space Mono',monospace;font-size:0.58rem;opacity:0.6;">${p.heat}s · ${p.cool}s</span>
+            ${p.label}
           </button>`).join('')}
       </div>
 
       <!-- Concentrate selector -->
       <p class="section-title" style="margin-bottom:var(--sp-3);">Concentrate</p>
-      <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-5);">
+      <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-5);justify-content:center;">
         ${CONCENTRATES.map(c => `
           <button onpointerdown="selectConcentrate('${c}')"
             style="
@@ -269,15 +227,15 @@ function renderHome() {
 
       <!-- Heating Source selector -->
       <p class="section-title" style="margin-bottom:var(--sp-3);">Heating Source</p>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3);margin-bottom:var(--sp-5);">
         ${HEATING_SOURCES.map(h => `
           <button onpointerdown="selectHeatingSource('${h}')"
             style="
-              padding:var(--sp-3);border-radius:var(--r-md);
+              padding:var(--sp-4);border-radius:var(--r-md);
               border:1px solid ${_homeHeatingSource === h ? 'var(--accent)' : 'var(--border)'};
               background:${_homeHeatingSource === h ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
               color:${_homeHeatingSource === h ? 'var(--accent)' : 'var(--text-secondary)'};
-              font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600;
+              font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:600;
               cursor:pointer;-webkit-tap-highlight-color:transparent;
             ">
             ${h}
@@ -308,6 +266,9 @@ function renderHome() {
       <button class="btn-primary fade-up" style="width:100%;font-size:1rem;padding:var(--sp-4);" onpointerdown="startSession()">
         START SESSION
       </button>
+
+      <!-- Last Session (bottom) -->
+      ${lastSessionHTML ? `<div style="margin-top:var(--sp-5);">${lastSessionHTML}</div>` : ''}
     </div>`;
 
   staggerCards(el);
@@ -502,13 +463,6 @@ function renderSettings() {
           </div>
         </div>
 
-        <p class="section-title">Preferences</p>
-        <div class="card" style="margin-bottom:var(--sp-4);">
-          <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-4);">
-            ${toggleRow('haptics', 'Haptic Feedback', s.haptics !== false)}
-          </div>
-        </div>
-
         ${window.BUILD_VARIANT !== 'premium' ? `
           <div class="card" style="margin-bottom:var(--sp-4);border-color:rgba(46,204,138,0.3);">
             <div class="card-body" style="text-align:center;">
@@ -546,6 +500,7 @@ window.addEventListener('session-complete', (e) => {
   saveSession(e.detail);
   if (typeof checkThemeUnlocks === 'function') checkThemeUnlocks();
   renderHome();
+  if (currentScreen === 'sessions' && typeof renderSessionsScreen === 'function') renderSessionsScreen();
 });
 
 window.addEventListener('session-edit', (e) => {
@@ -557,5 +512,6 @@ window.addEventListener('session-edit', (e) => {
     localStorage.setItem('dabflow2_sessions', JSON.stringify(sessions));
   }
   renderHome();
-  if (currentScreen === 'stats' && typeof renderStats === 'function') renderStats();
+  if (currentScreen === 'stats'    && typeof renderStats          === 'function') renderStats();
+  if (currentScreen === 'sessions' && typeof renderSessionsScreen === 'function') renderSessionsScreen();
 });

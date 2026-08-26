@@ -90,6 +90,15 @@ ICONS.edit = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
 </svg>`;
 
+ICONS.sessions = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <line x1="9" y1="7" x2="20" y2="7"/>
+  <line x1="9" y1="12" x2="20" y2="12"/>
+  <line x1="9" y1="17" x2="20" y2="17"/>
+  <circle cx="4.5" cy="7"  r="1.5" fill="currentColor" stroke="none"/>
+  <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+  <circle cx="4.5" cy="17" r="1.5" fill="currentColor" stroke="none"/>
+</svg>`;
+
 function getIcon(name, size = 24) {
   const svg = ICONS[name];
   if (!svg) return '';

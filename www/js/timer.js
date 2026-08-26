@@ -75,46 +75,81 @@ function renderTimerHeatmap() {
   const el = document.getElementById('timer-heatmap');
   if (!el) return;
 
-  const sessions   = typeof getSessions === 'function' ? getSessions() : [];
-  const WEEKS      = 11;
-  const dayCounts  = {};
+  const sessions  = typeof getSessions === 'function' ? getSessions() : [];
+  const WEEKS     = 14;
+  const CELL      = 14;
+  const GAP       = 2;
+  const dayCounts = {};
   sessions.forEach(s => {
     const key = new Date(s.ts).toDateString();
     dayCounts[key] = (dayCounts[key] || 0) + 1;
   });
   const maxCount = Math.max(...Object.values(dayCounts), 1);
 
-  // Align to Monday of the week containing (WEEKS-1) weeks ago
-  const today      = new Date(); today.setHours(0,0,0,0);
-  const dow        = (today.getDay() + 6) % 7; // Mon=0 … Sun=6
-  const startDate  = new Date(today);
+  const today     = new Date(); today.setHours(0,0,0,0);
+  const dow       = (today.getDay() + 6) % 7; // Mon=0…Sun=6
+  const startDate = new Date(today);
   startDate.setDate(today.getDate() - dow - (WEEKS - 1) * 7);
 
+  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Day labels: show M, W, F, S (every other row)
+  const DAY_LABELS = ['M','','W','','F','','S'];
+
+  // Month label per week column (show when month changes)
+  let prevMonth = -1;
+  const monthLabels = [];
+  for (let w = 0; w < WEEKS; w++) {
+    const wDate = new Date(startDate);
+    wDate.setDate(startDate.getDate() + w * 7);
+    const m = wDate.getMonth();
+    monthLabels.push(m !== prevMonth ? MONTH_ABBR[m] : '');
+    prevMonth = m;
+  }
+
+  // Build cells
   const cells = [];
   for (let w = 0; w < WEEKS; w++) {
     for (let d = 0; d < 7; d++) {
-      const date = new Date(startDate);
+      const date  = new Date(startDate);
       date.setDate(startDate.getDate() + w * 7 + d);
-      const key    = date.toDateString();
-      const count  = dayCounts[key] || 0;
-      const future = date > today;
-      cells.push({ count, future });
+      const key   = date.toDateString();
+      const count = dayCounts[key] || 0;
+      cells.push({ count, future: date > today });
     }
   }
 
-  el.style.cssText = `
-    display:grid;grid-template-columns:repeat(${WEEKS},8px);
-    grid-template-rows:repeat(7,8px);grid-auto-flow:column;
-    gap:2px;opacity:0.75;
-  `;
-  el.innerHTML = cells.map(({ count, future }) => {
-    if (future) return `<div style="width:8px;height:8px;border-radius:2px;"></div>`;
-    const alpha = count === 0 ? 0.07 : Math.max(0.25, count / maxCount);
-    const bg    = count === 0
-      ? `rgba(255,255,255,${alpha})`
-      : `rgba(46,204,138,${alpha.toFixed(2)})`;
-    return `<div style="width:8px;height:8px;border-radius:2px;background:${bg};"></div>`;
+  const labelStyle = `height:${CELL}px;line-height:${CELL}px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.28);text-align:right;padding-right:3px;`;
+  const dayLabelCol = DAY_LABELS.map(l =>
+    `<div style="${labelStyle}">${l}</div>`
+  ).join('');
+
+  const slotW = CELL + GAP;
+  const monthRow = monthLabels.map(m =>
+    `<div style="width:${CELL}px;font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.28);overflow:hidden;white-space:nowrap;">${m}</div>`
+  ).join('');
+
+  const cellsHTML = cells.map(({ count, future }) => {
+    if (future) return `<div style="width:${CELL}px;height:${CELL}px;border-radius:3px;"></div>`;
+    const alpha = count === 0 ? 0.08 : Math.max(0.3, count / maxCount);
+    const bg    = count === 0 ? `rgba(255,255,255,${alpha})` : `rgba(46,204,138,${alpha.toFixed(2)})`;
+    return `<div style="width:${CELL}px;height:${CELL}px;border-radius:3px;background:${bg};"></div>`;
   }).join('');
+
+  el.style.cssText = 'display:flex;justify-content:center;margin-top:0.5rem;';
+  el.innerHTML = `
+    <div style="display:inline-flex;flex-direction:column;gap:${GAP}px;">
+      <div style="display:flex;gap:${GAP}px;padding-left:${CELL + GAP}px;">
+        ${monthRow}
+      </div>
+      <div style="display:flex;gap:${GAP}px;align-items:start;">
+        <div style="display:grid;grid-template-rows:repeat(7,${CELL}px);gap:${GAP}px;width:${CELL}px;">
+          ${dayLabelCol}
+        </div>
+        <div style="display:grid;grid-template-rows:repeat(7,${CELL}px);grid-auto-flow:column;grid-auto-columns:${CELL}px;gap:${GAP}px;">
+          ${cellsHTML}
+        </div>
+      </div>
+    </div>`;
 }
 
 function initTimer() {
@@ -131,6 +166,11 @@ function initTimer() {
     renderTimerHeatmap();
   }
   _refreshTimerChips();
+
+  if (window._autoStartTimer) {
+    window._autoStartTimer = false;
+    startTimer();
+  }
 }
 
 function buildPhases(config) {
@@ -199,7 +239,7 @@ function cancelHold() {
 
 function _setHeatmapVisible(visible) {
   const el = document.getElementById('timer-heatmap');
-  if (el) el.style.opacity = visible ? '0.75' : '0';
+  if (el) el.style.opacity = visible ? '1' : '0';
 }
 
 function startTimer() {
@@ -237,8 +277,6 @@ function timerTick() {
   drawRingProgress(_currentPhaseIdx, progress);
 
   if (_phaseElapsed >= phase.duration) {
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
     // Pulse the ring wrap on phase change
     const wrap = document.getElementById('timer-ring-wrap');
     if (wrap) {
@@ -313,8 +351,6 @@ function completeSession() {
   updateTimerDisplay('Done');
   updatePhaseLabel('Complete', 'cool');
   if (_phases.length) drawRingProgress(_phases.length - 1, 1);
-
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
 
   _setHeatmapVisible(true);
   showVaporRise();
