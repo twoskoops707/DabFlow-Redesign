@@ -1,6 +1,6 @@
 'use strict';
 
-const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings', 'sessions'];
+const NAV_ICONS = ['home', 'timer', 'stats', 'glass', 'settings'];
 let currentScreen = 'home';
 
 const MATERIAL_PRESETS = [
@@ -68,9 +68,8 @@ function switchScreen(name) {
     }
   });
 
-  if (name === 'timer')    setTimeout(initTimer, 50);
-  if (name === 'stats')    setTimeout(renderStats, 50);
-  if (name === 'sessions') setTimeout(renderSessionsScreen, 50);
+  if (name === 'timer') setTimeout(initTimer, 50);
+  if (name === 'stats') setTimeout(renderStats, 50);
 }
 
 function initNav() {
@@ -474,6 +473,14 @@ function renderSettings() {
 
         ${themePickerHTML()}
 
+        <p class="section-title">Timer</p>
+        <div class="card" style="margin-bottom:var(--sp-4);">
+          <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
+            ${timerSettingRow('heat', 'Heat Time', s.heat !== undefined ? s.heat : 18)}
+            ${timerSettingRow('cool', 'Cool Time', s.cool !== undefined ? s.cool : 60)}
+          </div>
+        </div>
+
         <p class="section-title">Timer Colors</p>
         <div class="card" style="margin-bottom:var(--sp-4);">
           <div class="card-body" style="display:flex;flex-direction:column;gap:var(--sp-5);">
@@ -519,7 +526,6 @@ window.addEventListener('session-complete', (e) => {
   saveSession(e.detail);
   if (typeof checkThemeUnlocks === 'function') checkThemeUnlocks();
   renderHome();
-  if (currentScreen === 'sessions' && typeof renderSessionsScreen === 'function') renderSessionsScreen();
 });
 
 window.addEventListener('session-edit', (e) => {
@@ -531,6 +537,5 @@ window.addEventListener('session-edit', (e) => {
     localStorage.setItem('dabflow2_sessions', JSON.stringify(sessions));
   }
   renderHome();
-  if (currentScreen === 'stats'    && typeof renderStats          === 'function') renderStats();
-  if (currentScreen === 'sessions' && typeof renderSessionsScreen === 'function') renderSessionsScreen();
+  if (currentScreen === 'stats' && typeof renderStats === 'function') renderStats();
 });

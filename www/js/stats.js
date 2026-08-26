@@ -1,6 +1,12 @@
 'use strict';
 
 let _chartInstances = {};
+let _statsTab = 'stats'; // 'stats' | 'sessions'
+
+function switchStatsTab(tab) {
+  _statsTab = tab;
+  renderStats();
+}
 
 function escHtml(s) {
   if (!s) return '';
@@ -21,9 +27,40 @@ function renderStats() {
   const hasBrand   = sessions.some(s => s.brand);
   const hasStrain  = sessions.some(s => s.strain);
 
+  const tabBar = `
+    <div style="display:flex;gap:var(--sp-2);margin-bottom:var(--sp-5);">
+      ${['stats','sessions'].map(t => `
+        <button onpointerdown="switchStatsTab('${t}')"
+          style="
+            flex:1;padding:var(--sp-2) var(--sp-3);border-radius:var(--r-full);
+            border:1px solid ${_statsTab===t ? 'var(--accent)' : 'var(--border)'};
+            background:${_statsTab===t ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
+            color:${_statsTab===t ? 'var(--accent)' : 'var(--text-muted)'};
+            font-family:'Space Grotesk',sans-serif;font-size:var(--font-xs);font-weight:600;
+            cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;
+            -webkit-tap-highlight-color:transparent;
+          ">${t}</button>`).join('')}
+    </div>`;
+
+  if (_statsTab === 'sessions') {
+    el.innerHTML = `
+      <div style="padding-top:var(--sp-6);">
+        <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-5);">Stats</h1>
+        ${tabBar}
+        ${sessions.length
+          ? renderRecentSessions(sessions.slice().reverse())
+          : `<div style="text-align:center;padding:var(--sp-10) 0;color:var(--text-muted);">
+               <p class="font-display" style="font-size:var(--font-lg);">No sessions yet</p>
+             </div>`}
+      </div>`;
+    return;
+  }
+
   el.innerHTML = `
     <div style="padding-top:var(--sp-6);">
       <h1 class="font-display" style="font-size:var(--font-2xl);font-weight:700;margin-bottom:var(--sp-5);">Stats</h1>
+
+      ${tabBar}
 
       <!-- Summary chips -->
       <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5);">
