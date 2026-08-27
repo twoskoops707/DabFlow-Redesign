@@ -64,6 +64,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-base); color: var(
 
 /* ── Safe area ── */
 :root {
-  --safe-top:    env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top:    env(safe-area-inset-top, 28px);
+  --safe-bottom: env(safe-area-inset-bottom, 12px);
 }

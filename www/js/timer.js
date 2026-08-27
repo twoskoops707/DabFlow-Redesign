@@ -265,6 +265,8 @@ function startTimer() {
 
   if (_phases.length) updatePhaseLabel(_phases[0].label, _phases[0].name);
 
+  if (typeof resetCooldownAdFlag === 'function') resetCooldownAdFlag();
+
   if ('wakeLock' in navigator) {
     navigator.wakeLock.request('screen').then(s => { _wakeLock = s; }).catch(() => {});
   }
@@ -296,7 +298,12 @@ function timerTick() {
     if (_currentPhaseIdx >= _phases.length) {
       completeSession();
     } else {
-      updatePhaseLabel(_phases[_currentPhaseIdx].label, _phases[_currentPhaseIdx].name);
+      const nextPhase = _phases[_currentPhaseIdx];
+      updatePhaseLabel(nextPhase.label, nextPhase.name);
+
+      if (nextPhase.name === 'cool' && typeof showCooldownAd === 'function') {
+        showCooldownAd();
+      }
     }
   }
 }
