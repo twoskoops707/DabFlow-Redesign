@@ -336,6 +336,7 @@ function resetTimer() {
   _phaseElapsed    = 0;
   _holdStartHeld   = false;
   clearTimeout(_holdTimer);
+  if (typeof resetCooldownAdFlag === 'function') resetCooldownAdFlag();
 
   const btn      = document.getElementById('timer-start-btn');
   const resetBtn = document.getElementById('timer-reset-btn');
@@ -385,6 +386,9 @@ function dismissVaporRise() {
 // ── Session notes panel ───────────────────────────────────────────────────────
 
 function showSessionNotesPanel(existing) {
+  // Clear any previously-running timers before starting fresh ones
+  clearTimeout(_notesAutoClose); _notesAutoClose = null;
+  clearInterval(_countdownInterval); _countdownInterval = null;
   _selectedRating = 0;
   // Edit mode when a saved session is explicitly passed in (from stats/home edit
   // button). New sessions call this function with no argument.

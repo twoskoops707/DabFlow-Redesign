@@ -35,6 +35,38 @@ const HEATING_SOURCES = ['Butane', 'Propane'];
 let _homeMaterial      = 'Quartz';
 let _homeConcentrate   = 'Shatter';
 let _homeHeatingSource = 'Butane';
+let _bangerThickness   = 3.0; // mm — physics: thermal mass ∝ wall thickness
+
+const BANGER_LABELS = { 2:'Thin', 2.5:'Thin+', 3:'Standard', 3.5:'Solid', 4:'Thick', 4.5:'Premium', 5:'Thermal' };
+const BANGER_STOPS  = [2, 2.5, 3, 3.5, 4, 4.5, 5];
+
+// Lightweight update — avoids full re-render so slider stays smooth
+function setBangerThickness(val) {
+  _bangerThickness = parseFloat(val);
+  const lbl = document.getElementById('banger-label');
+  if (lbl) lbl.textContent = `${_bangerThickness}mm · ${BANGER_LABELS[_bangerThickness] || ''}`;
+  BANGER_STOPS.forEach((t, i) => {
+    const el = document.getElementById(`banger-stop-${i}`);
+    if (!el) return;
+    el.style.borderColor = t === _bangerThickness ? 'var(--accent)' : 'rgba(255,255,255,0.18)';
+    el.style.transform   = t === _bangerThickness ? 'scaleY(1.18)' : 'scaleY(1)';
+  });
+  const cfg = calcTimerConfig();
+  const heatEl = document.getElementById('home-preview-heat');
+  const coolEl = document.getElementById('home-preview-cool');
+  if (heatEl) heatEl.textContent = cfg.heat + 's';
+  if (coolEl) coolEl.textContent = cfg.cool + 's';
+  // Update delta line
+  const deltaEl = document.getElementById('banger-delta');
+  if (deltaEl) {
+    const base = calcTimerConfigBase();
+    const dh = cfg.heat - base.heat, dc = cfg.cool - base.cool;
+    deltaEl.textContent = (dh === 0 && dc === 0)
+      ? '3mm standard baseline'
+      : `${dh > 0 ? '+' : ''}${dh}s heat · ${dc > 0 ? '+' : ''}${dc}s cool vs standard`;
+    deltaEl.style.color = _bangerThickness > 3 ? 'var(--accent)' : _bangerThickness < 3 ? '#F59E0B' : 'var(--text-muted)';
+  }
+}
 
 function staggerCards(container) {
   if (!container) return;
@@ -118,13 +150,35 @@ function formatRelTime(ts) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function calcTimerConfig() {
-  const preset  = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
-  const heater  = HEATER_MOD[_homeHeatingSource] || { heat: 1.0, cool: 1.0 };
-  const cMod    = CONCENTRATE_MOD[_homeConcentrate] || 1.0;
+// Base config at 3mm standard (used for delta display)
+function calcTimerConfigBase() {
+  const preset = MATERIAL_PRESETS.find(p => p.label === _homeMaterial) || MATERIAL_PRESETS[0];
+  const heater = HEATER_MOD[_homeHeatingSource] || { heat: 1.0, cool: 1.0 };
+  const cMod   = CONCENTRATE_MOD[_homeConcentrate] || 1.0;
   return {
-    heat: Math.min(20, Math.round(preset.heat * heater.heat)),
-    cool: Math.min(85, Math.max(50, Math.round(preset.cool * heater.cool * cMod))),
+    heat: Math.min(35, Math.round(preset.heat * heater.heat)),
+    cool: Math.min(110, Math.max(35, Math.round(preset.cool * heater.cool * cMod))),
+  };
+}
+
+// Piecewise linear offset: below 3mm loses time, above gains time
+// Heat: 2mm=-3s … 3mm=0 … 5mm=+8s | Cool: 2mm=-8s … 3mm=0 … 5mm=+14s
+function bangerOffset(t) {
+  if (t <= 3) {
+    const f = (t - 2); // 0→1 across 2–3mm
+    return { dHeat: Math.round(-3 + f * 3), dCool: Math.round(-8 + f * 8) };
+  } else {
+    const f = (t - 3) / 2; // 0→1 across 3–5mm
+    return { dHeat: Math.round(f * 8), dCool: Math.round(f * 14) };
+  }
+}
+
+function calcTimerConfig() {
+  const base           = calcTimerConfigBase();
+  const { dHeat, dCool } = bangerOffset(_bangerThickness);
+  return {
+    heat: Math.max(5,  base.heat + dHeat),
+    cool: Math.max(25, base.cool + dCool),
   };
 }
 
@@ -132,6 +186,7 @@ function startSession() {
   window._selectedMaterial      = _homeMaterial;
   window._selectedConcentrate   = _homeConcentrate;
   window._selectedHeatingSource = _homeHeatingSource;
+  window._bangerThickness       = _bangerThickness;
   window._timerConfig           = calcTimerConfig();
   window._autoStartTimer        = true;
   switchScreen('timer');
@@ -153,34 +208,9 @@ function selectHeatingSource(label) {
 }
 
 function renderHome() {
-  const sessions    = getSessions();
-  const streak      = getStreak();
-  const lastSession = sessions.slice(-1)[0];
-  const el          = document.getElementById('screen-home');
+  const streak = getStreak();
+  const el     = document.getElementById('screen-home');
   if (!el) return;
-
-  const lastSessionHTML = lastSession ? (() => {
-    const meta = [lastSession.brand, lastSession.concentrate || lastSession.strain].filter(Boolean).join(' · ');
-    return `
-      <p class="section-title" style="margin-bottom:var(--sp-3);">Last Session</p>
-      <div class="card fade-up" style="margin-bottom:var(--sp-5);">
-        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);">
-          <div style="flex:1;min-width:0;">
-            <div class="font-display" style="font-size:var(--font-md);color:var(--text-primary);">${lastSession.material || 'Session'}</div>
-            <div class="font-body" style="font-size:var(--font-xs);color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-              ${meta || formatRelTime(lastSession.ts)}
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:var(--sp-3);flex-shrink:0;">
-            ${lastSession.rating ? `<span style="font-size:var(--font-lg);color:var(--accent);">${'★'.repeat(lastSession.rating)}</span>` : ''}
-            <button onpointerdown="editSessionByTs(${lastSession.ts})"
-              style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:var(--sp-2);-webkit-tap-highlight-color:transparent;">
-              ${getIcon('edit', 18)}
-            </button>
-          </div>
-        </div>
-      </div>`;
-  })() : '';
 
   el.innerHTML = `
     <div class="screen-inner">
@@ -209,16 +239,17 @@ function renderHome() {
 
       <!-- Concentrate selector -->
       <p class="section-title" style="margin-bottom:var(--sp-3);">Concentrate</p>
-      <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-5);justify-content:center;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5);">
         ${CONCENTRATES.map(c => `
           <button onpointerdown="selectConcentrate('${c}')"
             style="
-              padding:var(--sp-2) var(--sp-3);border-radius:99px;
+              padding:var(--sp-3) var(--sp-2);border-radius:var(--r-md);
               border:1px solid ${_homeConcentrate === c ? 'var(--accent)' : 'var(--border)'};
               background:${_homeConcentrate === c ? 'rgba(255,255,255,0.05)' : 'var(--bg-surface)'};
               color:${_homeConcentrate === c ? 'var(--accent)' : 'var(--text-secondary)'};
-              font-family:'Space Mono',monospace;font-size:0.65rem;
-              cursor:pointer;-webkit-tap-highlight-color:transparent;
+              font-family:'Space Mono',monospace;font-size:0.7rem;
+              cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;
+              display:flex;align-items:center;justify-content:center;min-height:44px;
             ">
             ${c}
           </button>`).join('')}
@@ -241,23 +272,59 @@ function renderHome() {
           </button>`).join('')}
       </div>
 
+      <!-- Banger thickness gauge -->
+      ${(() => {
+        const crossSections = BANGER_STOPS.map((t, i) => {
+          const w = Math.round(2 + (t - 2) * 5 / 3); // 2px→7px border
+          const active = t === _bangerThickness;
+          return `<div id="banger-stop-${i}" style="
+            width:22px;height:22px;
+            border:${w}px solid ${active ? 'var(--accent)' : 'rgba(255,255,255,0.18)'};
+            border-top:none;border-radius:0 0 4px 4px;
+            transform:${active ? 'scaleY(1.18)' : 'scaleY(1)'};
+            transform-origin:bottom;transition:border-color 120ms,transform 120ms;
+          "></div>`;
+        }).join('');
+        const cfg  = calcTimerConfig();
+        const base = calcTimerConfigBase();
+        const dh   = cfg.heat - base.heat;
+        const dc   = cfg.cool - base.cool;
+        const deltaText = (dh === 0 && dc === 0)
+          ? '3mm standard baseline'
+          : `${dh > 0 ? '+' : ''}${dh}s heat · ${dc > 0 ? '+' : ''}${dc}s cool vs standard`;
+        const deltaColor = _bangerThickness > 3 ? 'var(--accent)' : _bangerThickness < 3 ? '#F59E0B' : 'var(--text-muted)';
+        return `
+        <div style="margin-bottom:var(--sp-5);">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--sp-3);">
+            <p class="section-title" style="margin-bottom:0;">Banger Thickness</p>
+            <span id="banger-label" class="font-mono" style="font-size:var(--font-xs);color:var(--accent);">${_bangerThickness}mm · ${BANGER_LABELS[_bangerThickness] || ''}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 1px;margin-bottom:var(--sp-3);">
+            ${crossSections}
+          </div>
+          <input type="range" min="2" max="5" step="0.5" value="${_bangerThickness}"
+            oninput="setBangerThickness(this.value)"
+            style="width:100%;accent-color:var(--accent);cursor:pointer;">
+          <div style="display:flex;justify-content:space-between;margin-top:var(--sp-1);">
+            <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;">2mm thin</span>
+            <span style="font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;">5mm thermal</span>
+          </div>
+          <div id="banger-delta" style="margin-top:var(--sp-2);text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:${deltaColor};">${deltaText}</div>
+        </div>`;
+      })()}
+
       <!-- Live timer preview -->
       ${(() => {
         const cfg = calcTimerConfig();
-        const phases = [
-          { label: 'Heat Up',   val: cfg.heat, color: '#EF4444' },
-          { label: 'Cool Down', val: cfg.cool, color: '#5B9CF6' },
-        ];
         return `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3);margin-bottom:var(--sp-5);">
-          ${phases.map(p => `
-            <div style="
-              background:var(--bg-surface);border:1px solid var(--border);
-              border-radius:var(--r-md);padding:var(--sp-4) var(--sp-2);
-              text-align:center;
-            ">
-              <div class="font-mono" style="font-size:1.4rem;font-weight:700;color:${p.color};">${p.val}s</div>
-              <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">${p.label}</div>
-            </div>`).join('')}
+          <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-2);text-align:center;">
+            <div id="home-preview-heat" class="font-mono" style="font-size:1.4rem;font-weight:700;color:#EF4444;">${cfg.heat}s</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">Heat Up</div>
+          </div>
+          <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-2);text-align:center;">
+            <div id="home-preview-cool" class="font-mono" style="font-size:1.4rem;font-weight:700;color:#5B9CF6;">${cfg.cool}s</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;">Cool Down</div>
+          </div>
         </div>`;
       })()}
 
@@ -265,9 +332,6 @@ function renderHome() {
       <button class="btn-primary fade-up" style="width:100%;font-size:1rem;padding:var(--sp-4);" onpointerdown="startSession()">
         START SESSION
       </button>
-
-      <!-- Last Session (bottom) -->
-      ${lastSessionHTML ? `<div style="margin-top:var(--sp-5);">${lastSessionHTML}</div>` : ''}
     </div>`;
 
   staggerCards(el);

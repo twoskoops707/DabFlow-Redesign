@@ -45,7 +45,8 @@
     <div id="screen-timer"    class="screen"        role="main">
       <div id="timer-screen-inner" style="
         display:flex;flex-direction:column;align-items:center;
-        justify-content:center;height:100%;padding:var(--sp-6) var(--sp-4);
+        justify-content:flex-start;min-height:100%;
+        padding:calc(var(--safe-top) + var(--sp-10)) var(--sp-4) var(--sp-6);
         position:relative;
       ">
         <!-- Phase label — colored per phase via JS -->
@@ -121,7 +122,7 @@
         </div>
 
         <!-- Activity heatmap — 10-week history, shown when idle/complete -->
-        <div id="timer-heatmap" style="margin-top:1rem;"></div>
+        <div id="timer-heatmap" style="margin-top:var(--sp-8);width:100%;"></div>
       </div>
     </div>
     <div id="screen-stats" class="screen" role="main">

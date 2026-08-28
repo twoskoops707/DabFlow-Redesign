@@ -17,10 +17,29 @@ const ADS_CONFIG = {
   },
 };
 
-let _admobReady        = false;
+let _admobInitialized  = false;
+let _admobPrepared     = false;
+let _admobPreparing    = false;
 let _cooldownAdShown   = false;
 let _lastVideoAdAt     = 0;
 const VIDEO_MIN_GAP_MS = 5 * 60 * 1000;
+
+async function _prepareInterstitial() {
+  const AdMob = window.Capacitor?.Plugins?.AdMob;
+  if (!AdMob || _admobPreparing || _admobPrepared) return;
+  _admobPreparing = true;
+  try {
+    await AdMob.prepareInterstitial({
+      adId:      ADS_CONFIG.admob.interstitialId,
+      isTesting: ADS_CONFIG.admob.testMode,
+    });
+    _admobPrepared = true;
+  } catch (err) {
+    console.warn('[ads] AdMob prepare failed', err);
+  } finally {
+    _admobPreparing = false;
+  }
+}
 
 // ── Public entry ────────────────────────────────────────────────────────────
 function initAds() {
@@ -55,14 +74,11 @@ async function initAdMobInterstitial() {
     await AdMob.initialize({
       initializeForTesting: ADS_CONFIG.admob.testMode,
     });
-    await AdMob.prepareInterstitial({
-      adId:      ADS_CONFIG.admob.interstitialId,
-      isTesting: ADS_CONFIG.admob.testMode,
-    });
-    _admobReady = true;
+    _admobInitialized = true;
+    await _prepareInterstitial();
     console.log('[ads] AdMob interstitial ready');
   } catch (err) {
-    console.warn('[ads] AdMob init/prepare failed', err);
+    console.warn('[ads] AdMob init failed', err);
   }
 }
 
@@ -71,23 +87,20 @@ async function showCooldownAd() {
   if (window.BUILD_VARIANT === 'premium') return;
   if (_cooldownAdShown) return;
   if (Date.now() - _lastVideoAdAt < VIDEO_MIN_GAP_MS) return;
-  if (!_admobReady) return;
+  if (!_admobInitialized || !_admobPrepared) return;
 
   const AdMob = window.Capacitor?.Plugins?.AdMob;
   if (!AdMob) return;
 
   try {
+    _admobPrepared   = false;
     await AdMob.showInterstitial();
     _cooldownAdShown = true;
     _lastVideoAdAt   = Date.now();
-
-    // Preload the next impression
-    AdMob.prepareInterstitial({
-      adId:      ADS_CONFIG.admob.interstitialId,
-      isTesting: ADS_CONFIG.admob.testMode,
-    }).catch(() => {});
+    _prepareInterstitial();
   } catch (err) {
     console.warn('[ads] AdMob show failed', err);
+    _prepareInterstitial();
   }
 }
 
