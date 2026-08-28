@@ -2,7 +2,7 @@ name: Redesign - Build 3 APK Variants
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, api36-target ]
   workflow_dispatch:
 
 permissions:
