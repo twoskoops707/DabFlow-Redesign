@@ -89,6 +89,7 @@ jobs:
 
       - name: Inject AdMob App ID into AndroidManifest.xml
         run: |
+          set -e
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           APP_ID="ca-app-pub-6588738221262894~7650893291"
           if ! grep -q "com.google.android.gms.ads.APPLICATION_ID" "$MANIFEST"; then
@@ -97,7 +98,14 @@ jobs:
           else
             echo "AdMob meta-data already present, skipping"
           fi
-          grep -A1 "APPLICATION_ID" "$MANIFEST" || true
+          # VERIFY — hard-fail the build if injection didn't take
+          if ! grep -q "$APP_ID" "$MANIFEST"; then
+            echo "::error::AdMob App ID missing from AndroidManifest.xml — Google Mobile Ads SDK will crash on launch"
+            cat "$MANIFEST"
+            exit 1
+          fi
+          echo "=== manifest AdMob block ==="
+          grep -B1 -A1 "APPLICATION_ID" "$MANIFEST"
 
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick

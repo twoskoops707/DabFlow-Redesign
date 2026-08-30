@@ -572,18 +572,33 @@ function renderSettings() {
     </div>`;
 }
 
+// Global error surface — any uncaught error at least logs instead of white-screening
+window.addEventListener('error', (e) => {
+  console.error('[app] uncaught:', e.message, e.filename, e.lineno);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[app] unhandled promise rejection:', e.reason);
+});
+
+function _safe(label, fn) {
+  try { fn(); }
+  catch (err) { console.error(`[app] ${label} failed:`, err); }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  if (window.BUILD_VARIANT === 'demo' || window.BUILD_VARIANT === 'premium') {
-    generateSeedData();
-  }
-  injectMoleculeBg();
-  initAds();
-  initNav();
-  populateBrandList();
-  updateStrainList('');
-  renderHome();
-  renderGlass();
-  renderSettings();
+  _safe('seed-data', () => {
+    if (window.BUILD_VARIANT === 'demo' || window.BUILD_VARIANT === 'premium') {
+      generateSeedData();
+    }
+  });
+  _safe('molecule-bg',  () => injectMoleculeBg());
+  _safe('ads',          () => { if (!window.DISABLE_ADS) initAds(); });
+  _safe('nav',          () => initNav());
+  _safe('brand-list',   () => populateBrandList());
+  _safe('strain-list',  () => updateStrainList(''));
+  _safe('render-home',  () => renderHome());
+  _safe('render-glass', () => renderGlass());
+  _safe('render-settings', () => renderSettings());
 });
 
 window.addEventListener('session-complete', (e) => {
